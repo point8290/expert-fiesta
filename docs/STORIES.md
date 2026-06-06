@@ -120,7 +120,7 @@ clips, and final render.*
   negative prompt + seed.
 - AC2: View / approve / regenerate / edit prompt / replace manually.
 
-### P2-S5 — Character consistency · `todo`
+### P2-S5 — Character consistency · `done`
 - AC1: Identity-anchor tokens injected verbatim into every keyframe prompt.
 - AC2: IP-Adapter references the approved character image.
 

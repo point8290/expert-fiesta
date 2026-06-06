@@ -63,7 +63,11 @@ def generate_character_reference(
 
 
 def keyframe_params(
-    project: Project, scene: Scene, characters: list[Character], seed: int
+    project: Project,
+    scene: Scene,
+    characters: list[Character],
+    seed: int,
+    reference_image: str | None = None,
 ) -> dict:
     # P2-S5: inject every character's identity anchors verbatim for consistency.
     anchors = ", ".join(
@@ -77,13 +81,24 @@ def keyframe_params(
         if part
     )
     width, height = ASPECT_RESOLUTIONS.get(project.aspect_ratio, (1920, 1080))
-    return {
+    params = {
         "POSITIVE_PROMPT": positive,
         "NEGATIVE_PROMPT": scene.negative_prompt or DEFAULT_NEGATIVE,
         "SEED": seed,
         "WIDTH": width,
         "HEIGHT": height,
     }
+    if reference_image:
+        # P2-S5 AC2: IP-Adapter consumes the approved character reference image.
+        params["REFERENCE_IMAGE"] = reference_image
+    return params
+
+
+def _approved_reference(characters: list[Character]) -> str | None:
+    for character in characters:
+        if character.ref_status == "approved" and character.ref_image_path:
+            return character.ref_image_path
+    return None
 
 
 def generate_scene_keyframe(
@@ -98,6 +113,8 @@ def generate_scene_keyframe(
     output = (
         storage.project_dir(project.id, "scenes", scene.id) / "keyframe.png"
     )
-    params = keyframe_params(project, scene, characters, seed)
-    generator.generate("keyframe", params, str(output))
+    reference = _approved_reference(characters)
+    workflow = "keyframe_ipadapter" if reference else "keyframe"
+    params = keyframe_params(project, scene, characters, seed, reference)
+    generator.generate(workflow, params, str(output))
     return str(output)
