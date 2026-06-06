@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+
+# Local assets / generated media
+projects/
+backend/localmv.db
+
+# Node
+node_modules/
+.next/
+
+# OS
+.DS_Store
