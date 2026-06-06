@@ -69,3 +69,30 @@ export interface RenderResult {
   status: string;
   outputPath: string;
 }
+
+export interface Character {
+  id: string;
+  projectId: string;
+  name: string;
+  age: string;
+  face: string;
+  hair: string;
+  clothing: string;
+  personality: string;
+  identityAnchors: string[];
+  refImagePath: string | null;
+  refStatus: string;
+}
+
+export interface Job {
+  id: string;
+  projectId: string;
+  sceneId: string | null;
+  type: string;
+  status: string;
+  progress: number;
+  error: string | null;
+  resultPath: string | null;
+  createdAt: string;
+  queuePosition: number | null;
+}

@@ -1,6 +1,8 @@
 // Typed client for the Local Music Video Studio backend.
 import type {
   Audio,
+  Character,
+  Job,
   Lyrics,
   Project,
   ProjectCreate,
@@ -91,6 +93,54 @@ export const api = {
   },
   finalizeScene: (sceneId: string) =>
     request<Scene>(`/scenes/${sceneId}/finalize`, { method: "POST" }),
+
+  // Characters
+  generateCharacters: (id: string) =>
+    request<Character[]>(`/projects/${id}/characters`, { method: "POST" }),
+  listCharacters: (id: string) =>
+    request<Character[]>(`/projects/${id}/characters`),
+  updateCharacter: (characterId: string, data: Partial<Character>) =>
+    request<Character>(`/characters/${characterId}`, jsonInit("PATCH", data)),
+  generateCharacterReference: (characterId: string) =>
+    request<Character>(`/characters/${characterId}/reference`, {
+      method: "POST",
+    }),
+  approveCharacterReference: (characterId: string) =>
+    request<Character>(`/characters/${characterId}/reference/approve`, {
+      method: "POST",
+    }),
+  uploadCharacterReference: (characterId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<Character>(`/characters/${characterId}/reference/upload`, {
+      method: "POST",
+      body: form,
+    });
+  },
+
+  // Keyframes
+  generateKeyframe: (sceneId: string) =>
+    request<Scene>(`/scenes/${sceneId}/keyframe`, { method: "POST" }),
+  approveKeyframe: (sceneId: string) =>
+    request<Scene>(`/scenes/${sceneId}/keyframe/approve`, { method: "POST" }),
+  uploadKeyframe: (sceneId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<Scene>(`/scenes/${sceneId}/keyframe/upload`, {
+      method: "POST",
+      body: form,
+    });
+  },
+
+  // Clip generation + review
+  generateClip: (sceneId: string) =>
+    request<Job>(`/scenes/${sceneId}/clip/generate`, { method: "POST" }),
+  approveClip: (sceneId: string) =>
+    request<Scene>(`/scenes/${sceneId}/clip/approve`, { method: "POST" }),
+
+  // Jobs
+  getJob: (jobId: string) => request<Job>(`/jobs/${jobId}`),
+  listJobs: (id: string) => request<Job[]>(`/projects/${id}/jobs`),
 
   // Render
   renderFinal: (id: string) =>

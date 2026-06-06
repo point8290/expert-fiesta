@@ -75,4 +75,46 @@ describe("api client", () => {
       status: 404,
     });
   });
+
+  it("generates characters via POST", async () => {
+    const fetchMock = mockFetch([{ id: "c1", name: "Aarav" }]);
+    const chars = await api.generateCharacters("p1");
+    expect(chars).toHaveLength(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/projects\/p1\/characters$/);
+    expect(init?.method).toBe("POST");
+  });
+
+  it("generates a character reference image", async () => {
+    const fetchMock = mockFetch({ id: "c1", refStatus: "generated" });
+    await api.generateCharacterReference("c1");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/characters\/c1\/reference$/);
+    expect(init?.method).toBe("POST");
+  });
+
+  it("generates a scene keyframe", async () => {
+    const fetchMock = mockFetch({ id: "s1", keyframeStatus: "generated" });
+    await api.generateKeyframe("s1");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/scenes\/s1\/keyframe$/);
+    expect(init?.method).toBe("POST");
+  });
+
+  it("generates a clip and returns a job", async () => {
+    const fetchMock = mockFetch({ id: "j1", type: "clip", status: "succeeded" });
+    const job = await api.generateClip("s1");
+    expect(job.type).toBe("clip");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/scenes\/s1\/clip\/generate$/);
+    expect(init?.method).toBe("POST");
+  });
+
+  it("lists project jobs", async () => {
+    const fetchMock = mockFetch([{ id: "j1", type: "clip" }]);
+    const jobs = await api.listJobs("p1");
+    expect(jobs).toHaveLength(1);
+    const [url] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/projects\/p1\/jobs$/);
+  });
 });
