@@ -2,8 +2,9 @@
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
+from ..adapters.audio_analysis import AudioAnalyzer
 from ..database import get_db
-from ..dependencies import get_storage
+from ..dependencies import get_audio_analyzer, get_storage
 from ..models import Audio, Project
 from ..schemas import AudioRead
 from ..storage import Storage
@@ -61,4 +62,26 @@ def get_audio(project_id: str, db: Session = Depends(get_db)):
     row = db.get(Audio, project_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Audio not found")
+    return AudioRead.model_validate(row)
+
+
+@router.post("/analyze", response_model=AudioRead)
+def analyze_audio(
+    project_id: str,
+    db: Session = Depends(get_db),
+    analyzer: AudioAnalyzer = Depends(get_audio_analyzer),
+):
+    _get_project_or_404(db, project_id)
+    row = db.get(Audio, project_id)
+    if row is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Audio not found")
+
+    analysis = analyzer.analyze(row.path)
+    row.duration_seconds = analysis.duration_seconds
+    row.bpm = analysis.bpm
+    row.beats = analysis.beats
+    row.sections = analysis.sections
+    row.waveform = analysis.waveform
+    db.commit()
+    db.refresh(row)
     return AudioRead.model_validate(row)

@@ -50,6 +50,16 @@ class ProjectRead(CamelModel):
     updated_at: datetime
 
 
+class AudioAnalysis(CamelModel):
+    """Features extracted from an audio track, used to time the storyboard."""
+
+    duration_seconds: float
+    bpm: float
+    beats: list[float]
+    sections: list
+    waveform: list[float]
+
+
 class AudioRead(CamelModel):
     project_id: str
     filename: str

@@ -43,7 +43,7 @@ prompt, and emotional arc from my idea.*
 - AC2: Non-audio mime types are rejected with `415`.
 - AC3: `GET /projects/{id}/audio` returns stored audio metadata.
 
-### P1-S4 — Analyze audio · `todo`
+### P1-S4 — Analyze audio · `done`
 *As a creator, I want the system to extract duration, BPM, beats, sections, and
 waveform so scenes can be timed.*
 
