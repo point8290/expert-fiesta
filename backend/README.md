@@ -39,5 +39,5 @@ module under `tests/` before its implementation lands under `app/`.
 | P1-S4 | Analyze audio | ✅ done |
 | P1-S5 | Generate storyboard | ✅ done |
 | P1-S6 | Manage scenes | ✅ done |
-| P1-S7 | Upload clip per scene | ⬜ next |
-| P1-S8 | Render final MP4 | ⬜ todo |
+| P1-S7 | Upload clip per scene | ✅ done |
+| P1-S8 | Render final MP4 | ⬜ next |

@@ -67,7 +67,7 @@ waveform so scenes can be timed.*
 - AC2: `PATCH /scenes/{id}` edits prompt fields.
 - AC3: `POST /scenes/{id}/regenerate-prompt` re-generates prompts for one scene.
 
-### P1-S7 — Upload clip per scene · `todo`
+### P1-S7 — Upload clip per scene · `done`
 *As a creator, I want to upload a video clip for a scene and mark it final.*
 
 - AC1: `POST /scenes/{id}/clip` stores an uploaded clip and sets
