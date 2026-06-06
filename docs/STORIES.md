@@ -75,7 +75,7 @@ waveform so scenes can be timed.*
 - AC2: Non-video uploads are rejected with `415`.
 - AC3: `POST /scenes/{id}/finalize` marks the scene final.
 
-### P1-S8 — Render final MP4 · `todo`
+### P1-S8 — Render final MP4 · `done`
 *As a creator, I want all approved clips stitched with my audio into one MP4.*
 
 - AC1: `POST /projects/{id}/render` enqueues a render job over approved clips.

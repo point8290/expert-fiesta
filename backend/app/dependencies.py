@@ -3,6 +3,7 @@ import os
 
 from .adapters.audio_analysis import AudioAnalyzer, LibrosaAnalyzer
 from .adapters.llm import LLMClient, OllamaClient
+from .adapters.render import FFmpegRenderer, Renderer
 from .storage import Storage
 
 
@@ -16,3 +17,7 @@ def get_storage() -> Storage:
 
 def get_audio_analyzer() -> AudioAnalyzer:
     return LibrosaAnalyzer()
+
+
+def get_renderer() -> Renderer:
+    return FFmpegRenderer()

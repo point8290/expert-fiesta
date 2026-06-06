@@ -112,6 +112,12 @@ class SceneRead(CamelModel):
     clip_status: str
 
 
+class RenderRead(CamelModel):
+    project_id: str
+    status: str
+    output_path: str
+
+
 class LyricsData(CamelModel):
     """The structured lyrics payload produced by the LLM and returned by the API."""
 
