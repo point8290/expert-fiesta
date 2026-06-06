@@ -6,7 +6,7 @@ Lyrics, Character, Scene, and Job tables (see docs/BUILD_PLAN.md §2).
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -36,3 +36,18 @@ class Project(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=_now, onupdate=_now
     )
+
+
+class Lyrics(Base):
+    """One set of lyrics per project (regenerating replaces the existing row)."""
+
+    __tablename__ = "lyrics"
+
+    project_id: Mapped[str] = mapped_column(
+        String, ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    )
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    structure: Mapped[list] = mapped_column(JSON, nullable=False)
+    body: Mapped[str] = mapped_column(String, nullable=False)
+    music_prompt: Mapped[str] = mapped_column(String, nullable=False)
+    emotional_arc: Mapped[str] = mapped_column(String, nullable=False)

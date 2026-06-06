@@ -48,3 +48,13 @@ class ProjectRead(CamelModel):
     status: str
     created_at: datetime
     updated_at: datetime
+
+
+class LyricsData(CamelModel):
+    """The structured lyrics payload produced by the LLM and returned by the API."""
+
+    title: str = Field(min_length=1)
+    structure: list[str]
+    body: str = Field(min_length=1)
+    music_prompt: str = Field(min_length=1)
+    emotional_arc: str = Field(min_length=1)

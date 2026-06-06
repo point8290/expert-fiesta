@@ -10,7 +10,7 @@ Status legend: `todo` · `in-progress` · `done`
 
 ## Phase 1 — Pipeline Skeleton (no GPU)
 
-### P1-S1 — Create and manage projects · `in-progress`
+### P1-S1 — Create and manage projects · `done`
 *As a creator, I want to create, view, update, and delete music-video projects
 so that each video has its own workspace.*
 
@@ -24,7 +24,7 @@ so that each video has its own workspace.*
 - AC7: Required fields: `title`, `idea`, `genre`, `mood`, `visualStyle`,
   `targetDuration`, `aspectRatio`.
 
-### P1-S2 — Generate lyrics and music prompt · `todo`
+### P1-S2 — Generate lyrics and music prompt · `done`
 *As a creator, I want the system to generate a title, lyrics, structure, music
 prompt, and emotional arc from my idea.*
 

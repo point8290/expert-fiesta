@@ -34,8 +34,8 @@ module under `tests/` before its implementation lands under `app/`.
 | Story | Description | Status |
 |-------|-------------|--------|
 | P1-S1 | Create and manage projects | ✅ done |
-| P1-S2 | Generate lyrics and music prompt | ⬜ next |
-| P1-S3 | Upload project audio | ⬜ todo |
+| P1-S2 | Generate lyrics and music prompt | ✅ done |
+| P1-S3 | Upload project audio | ⬜ next |
 | P1-S4 | Analyze audio | ⬜ todo |
 | P1-S5 | Generate storyboard | ⬜ todo |
 | P1-S6 | Manage scenes | ⬜ todo |
