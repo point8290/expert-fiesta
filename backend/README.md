@@ -43,3 +43,10 @@ module under `tests/` before its implementation lands under `app/`.
 | P1-S8 | Render final MP4 | ✅ done |
 
 > Frontend (P1-S9) lives in `../frontend` (Next.js). **Phase 1 is complete.**
+
+## Phase 2
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| P2-S1 | ComfyUI media adapter | ✅ done |
+| P2-S2 | Character bible | ⬜ next |

@@ -96,7 +96,7 @@ clips, and final render.*
 
 ## Phase 2 — Local Image Generation
 
-### P2-S1 — ComfyUI media adapter · `todo`
+### P2-S1 — ComfyUI media adapter · `done`
 *As the system, I want a client that runs parameterized ComfyUI workflows.*
 
 - AC1: Adapter clones a workflow template, injects prompt/seed/resolution, POSTs

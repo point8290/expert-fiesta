@@ -4,6 +4,7 @@ import os
 from .adapters.audio_analysis import AudioAnalyzer, LibrosaAnalyzer
 from .adapters.llm import LLMClient, OllamaClient
 from .adapters.render import FFmpegRenderer, Renderer
+from .comfyui.client import ComfyUIClient, ImageGenerator
 from .storage import Storage
 
 
@@ -21,3 +22,7 @@ def get_audio_analyzer() -> AudioAnalyzer:
 
 def get_renderer() -> Renderer:
     return FFmpegRenderer()
+
+
+def get_image_generator() -> ImageGenerator:
+    return ComfyUIClient()

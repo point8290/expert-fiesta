@@ -1,4 +1,5 @@
 """FastAPI application entrypoint for the Local Music Video Studio backend."""
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -11,6 +12,15 @@ from .routers import audio, lyrics, projects, render, scenes, storyboard
 async def lifespan(app: FastAPI):
     # For local-first single-user use; later phases can switch to migrations.
     Base.metadata.create_all(bind=engine)
+    # P2-S1 AC3: validate committed ComfyUI workflows load on startup.
+    try:
+        from .comfyui.client import ComfyUIClient
+
+        ComfyUIClient().smoke_test()
+    except Exception as exc:  # pragma: no cover - never block startup
+        logging.getLogger("uvicorn.error").warning(
+            "ComfyUI workflow smoke-test failed: %s", exc
+        )
     yield
 
 
