@@ -60,7 +60,7 @@ waveform so scenes can be timed.*
 - AC2: Scene boundaries snap to real section/beat boundaries from audio analysis.
 - AC3: Scene count is within 8–12 and total duration ≈ target duration.
 
-### P1-S6 — Manage scenes · `todo`
+### P1-S6 — Manage scenes · `done`
 *As a creator, I want to view and edit individual scenes.*
 
 - AC1: `GET /projects/{id}/scenes` lists scenes in order.

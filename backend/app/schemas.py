@@ -83,6 +83,15 @@ class SceneContent(CamelModel):
     negative_prompt: str
 
 
+class SceneUpdate(CamelModel):
+    visual_description: Optional[str] = None
+    camera_instruction: Optional[str] = None
+    motion_instruction: Optional[str] = None
+    keyframe_prompt: Optional[str] = None
+    video_prompt: Optional[str] = None
+    negative_prompt: Optional[str] = None
+
+
 class SceneRead(CamelModel):
     id: str
     project_id: str

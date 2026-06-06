@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from .database import Base, engine
-from .routers import audio, lyrics, projects, storyboard
+from .routers import audio, lyrics, projects, scenes, storyboard
 
 
 @asynccontextmanager
@@ -26,3 +26,4 @@ app.include_router(projects.router)
 app.include_router(lyrics.router)
 app.include_router(audio.router)
 app.include_router(storyboard.router)
+app.include_router(scenes.router)

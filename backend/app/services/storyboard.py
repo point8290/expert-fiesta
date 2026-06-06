@@ -72,6 +72,36 @@ def _generate_contents(client: LLMClient, prompt: str) -> list[SceneContent]:
     ) from last_error
 
 
+REGEN_SYSTEM_PROMPT = (
+    "You are a music-video storyboard artist. Rewrite a single scene as original "
+    "content. Respond with one JSON object with exactly these keys: "
+    "visualDescription, cameraInstruction, motionInstruction, keyframePrompt, "
+    "videoPrompt, negativePrompt."
+)
+
+
+def regenerate_scene_content(
+    project: Project, scene: Scene, client: LLMClient
+) -> SceneContent:
+    """Re-generate just the descriptive content of one scene; timing is kept."""
+    prompt = (
+        f"Visual style: {project.visual_style}\nMood: {project.mood}\n"
+        f"Section: {scene.section_name}\n"
+        f"Current description: {scene.visual_description}\n"
+        "Produce a fresh take on this scene."
+    )
+    last_error: Exception | None = None
+    for _ in range(MAX_ATTEMPTS):
+        raw = client.complete(REGEN_SYSTEM_PROMPT, prompt)
+        try:
+            return SceneContent.model_validate(json.loads(raw))
+        except (json.JSONDecodeError, ValidationError) as exc:
+            last_error = exc
+    raise StoryboardGenerationError(
+        f"LLM failed to regenerate scene after {MAX_ATTEMPTS} attempts"
+    ) from last_error
+
+
 def _snap(t: float, beats: list[float] | None) -> float:
     if not beats:
         return t
