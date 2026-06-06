@@ -52,7 +52,7 @@ waveform so scenes can be timed.*
 - AC2: Analysis runs behind an adapter (librosa/ffprobe) that is mockable.
 - AC3: Results persist on the `Audio` record.
 
-### P1-S5 — Generate storyboard · `todo`
+### P1-S5 — Generate storyboard · `done`
 *As a creator, I want an 8–12 scene storyboard timed to my audio.*
 
 - AC1: `POST /projects/{id}/storyboard` creates `Scene` rows with all spec

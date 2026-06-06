@@ -55,6 +55,32 @@ class Lyrics(Base):
     emotional_arc: Mapped[str] = mapped_column(String, nullable=False)
 
 
+class Scene(Base):
+    """One storyboard scene. Keyframe/clip fields are populated in Phases 2-3."""
+
+    __tablename__ = "scenes"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    project_id: Mapped[str] = mapped_column(
+        String, ForeignKey("projects.id", ondelete="CASCADE"), index=True
+    )
+    number: Mapped[int] = mapped_column(Integer, nullable=False)
+    start_time: Mapped[float] = mapped_column(Float, nullable=False)
+    end_time: Mapped[float] = mapped_column(Float, nullable=False)
+    duration_seconds: Mapped[float] = mapped_column(Float, nullable=False)
+    section_name: Mapped[str] = mapped_column(String, default="")
+    visual_description: Mapped[str] = mapped_column(String, default="")
+    camera_instruction: Mapped[str] = mapped_column(String, default="")
+    motion_instruction: Mapped[str] = mapped_column(String, default="")
+    keyframe_prompt: Mapped[str] = mapped_column(String, default="")
+    video_prompt: Mapped[str] = mapped_column(String, default="")
+    negative_prompt: Mapped[str] = mapped_column(String, default="")
+    keyframe_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    keyframe_status: Mapped[str] = mapped_column(String, default="pending")
+    clip_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    clip_status: Mapped[str] = mapped_column(String, default="pending")
+
+
 class Audio(Base):
     """One audio track per project. Analysis fields (P1-S4) are filled in later."""
 

@@ -37,7 +37,7 @@ module under `tests/` before its implementation lands under `app/`.
 | P1-S2 | Generate lyrics and music prompt | ✅ done |
 | P1-S3 | Upload project audio | ✅ done |
 | P1-S4 | Analyze audio | ✅ done |
-| P1-S5 | Generate storyboard | ⬜ next |
-| P1-S6 | Manage scenes | ⬜ todo |
+| P1-S5 | Generate storyboard | ✅ done |
+| P1-S6 | Manage scenes | ⬜ next |
 | P1-S7 | Upload clip per scene | ⬜ todo |
 | P1-S8 | Render final MP4 | ⬜ todo |

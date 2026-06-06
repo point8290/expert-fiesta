@@ -72,6 +72,37 @@ class AudioRead(CamelModel):
     waveform: Optional[list[float]] = None
 
 
+class SceneContent(CamelModel):
+    """The descriptive fields the LLM produces for one scene (no timing)."""
+
+    visual_description: str
+    camera_instruction: str
+    motion_instruction: str
+    keyframe_prompt: str
+    video_prompt: str
+    negative_prompt: str
+
+
+class SceneRead(CamelModel):
+    id: str
+    project_id: str
+    number: int
+    start_time: float
+    end_time: float
+    duration_seconds: float
+    section_name: str
+    visual_description: str
+    camera_instruction: str
+    motion_instruction: str
+    keyframe_prompt: str
+    video_prompt: str
+    negative_prompt: str
+    keyframe_path: Optional[str] = None
+    keyframe_status: str
+    clip_path: Optional[str] = None
+    clip_status: str
+
+
 class LyricsData(CamelModel):
     """The structured lyrics payload produced by the LLM and returned by the API."""
 
