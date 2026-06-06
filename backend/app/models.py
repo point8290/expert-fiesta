@@ -81,6 +81,26 @@ class Scene(Base):
     clip_status: Mapped[str] = mapped_column(String, default="pending")
 
 
+class Character(Base):
+    """A character in the project's bible. Identity anchors drive consistency."""
+
+    __tablename__ = "characters"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    project_id: Mapped[str] = mapped_column(
+        String, ForeignKey("projects.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    age: Mapped[str] = mapped_column(String, default="")
+    face: Mapped[str] = mapped_column(String, default="")
+    hair: Mapped[str] = mapped_column(String, default="")
+    clothing: Mapped[str] = mapped_column(String, default="")
+    personality: Mapped[str] = mapped_column(String, default="")
+    identity_anchors: Mapped[list] = mapped_column(JSON, default=list)
+    ref_image_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    ref_status: Mapped[str] = mapped_column(String, default="pending")
+
+
 class Audio(Base):
     """One audio track per project. Analysis fields (P1-S4) are filled in later."""
 

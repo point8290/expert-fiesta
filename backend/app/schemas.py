@@ -72,6 +72,42 @@ class AudioRead(CamelModel):
     waveform: Optional[list[float]] = None
 
 
+class CharacterContent(CamelModel):
+    """The character fields produced by the LLM."""
+
+    name: str
+    age: str = ""
+    face: str = ""
+    hair: str = ""
+    clothing: str = ""
+    personality: str = ""
+    identity_anchors: list[str] = []
+
+
+class CharacterUpdate(CamelModel):
+    name: Optional[str] = None
+    age: Optional[str] = None
+    face: Optional[str] = None
+    hair: Optional[str] = None
+    clothing: Optional[str] = None
+    personality: Optional[str] = None
+    identity_anchors: Optional[list[str]] = None
+
+
+class CharacterRead(CamelModel):
+    id: str
+    project_id: str
+    name: str
+    age: str
+    face: str
+    hair: str
+    clothing: str
+    personality: str
+    identity_anchors: list[str]
+    ref_image_path: Optional[str] = None
+    ref_status: str
+
+
 class SceneContent(CamelModel):
     """The descriptive fields the LLM produces for one scene (no timing)."""
 

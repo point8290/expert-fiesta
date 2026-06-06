@@ -104,7 +104,7 @@ clips, and final render.*
 - AC2: Workflow templates are committed to the repo and version-pinned.
 - AC3: A startup smoke-test validates each workflow loads.
 
-### P2-S2 — Generate character bible · `todo`
+### P2-S2 — Generate character bible · `done`
 *As a creator, I want characters with identity anchors for consistency.*
 
 - AC1: Characters include name, age, face, hair, clothing, personality,
