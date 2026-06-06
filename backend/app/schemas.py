@@ -148,6 +148,19 @@ class SceneRead(CamelModel):
     clip_status: str
 
 
+class JobRead(CamelModel):
+    id: str
+    project_id: str
+    scene_id: Optional[str] = None
+    type: str
+    status: str
+    progress: float
+    error: Optional[str] = None
+    result_path: Optional[str] = None
+    created_at: datetime
+    queue_position: Optional[int] = None
+
+
 class RenderRead(CamelModel):
     project_id: str
     status: str

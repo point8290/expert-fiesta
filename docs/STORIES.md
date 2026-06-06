@@ -124,7 +124,7 @@ clips, and final render.*
 - AC1: Identity-anchor tokens injected verbatim into every keyframe prompt.
 - AC2: IP-Adapter references the approved character image.
 
-### P2-S6 — Async jobs + progress · `todo`
+### P2-S6 — Async jobs + progress · `done`
 - AC1: Generation runs in the job queue; UI shows queue position/progress/errors.
 
 ---

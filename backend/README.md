@@ -53,4 +53,4 @@ module under `tests/` before its implementation lands under `app/`.
 | P2-S3 | Character reference images | ✅ done |
 | P2-S4 | Scene keyframes | ✅ done |
 | P2-S5 | Character consistency | ✅ done |
-| P2-S6 | Async jobs + progress | ⬜ next |
+| P2-S6 | Async jobs + progress | ✅ done |

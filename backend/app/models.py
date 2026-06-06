@@ -101,6 +101,24 @@ class Character(Base):
     ref_status: Mapped[str] = mapped_column(String, default="pending")
 
 
+class Job(Base):
+    """A unit of (usually slow, GPU-bound) generation work with live status."""
+
+    __tablename__ = "jobs"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    project_id: Mapped[str] = mapped_column(
+        String, ForeignKey("projects.id", ondelete="CASCADE"), index=True
+    )
+    scene_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    type: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="queued")
+    progress: Mapped[float] = mapped_column(Float, default=0.0)
+    error: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    result_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+
+
 class Audio(Base):
     """One audio track per project. Analysis fields (P1-S4) are filled in later."""
 

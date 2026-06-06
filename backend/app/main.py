@@ -8,6 +8,7 @@ from .database import Base, engine
 from .routers import (
     audio,
     characters,
+    jobs,
     lyrics,
     projects,
     render,
@@ -47,3 +48,4 @@ app.include_router(storyboard.router)
 app.include_router(scenes.router)
 app.include_router(render.router)
 app.include_router(characters.router)
+app.include_router(jobs.router)

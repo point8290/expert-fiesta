@@ -9,15 +9,21 @@ from app.main import app
 
 
 @pytest.fixture()
-def client():
-    """A TestClient backed by a throwaway in-memory SQLite database."""
+def db_engine():
+    """A throwaway in-memory SQLite engine shared by the client and db_session."""
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    TestingSession = sessionmaker(bind=engine, autoflush=False, autocommit=False)
     Base.metadata.create_all(bind=engine)
+    return engine
+
+
+@pytest.fixture()
+def client(db_engine):
+    """A TestClient backed by the shared in-memory database."""
+    TestingSession = sessionmaker(bind=db_engine, autoflush=False, autocommit=False)
 
     def override_get_db():
         db = TestingSession()
@@ -30,6 +36,17 @@ def client():
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
+
+
+@pytest.fixture()
+def db_session(db_engine):
+    """A session bound to the same engine as ``client`` for direct DB access."""
+    Session = sessionmaker(bind=db_engine, autoflush=False, autocommit=False)
+    session = Session()
+    try:
+        yield session
+    finally:
+        session.close()
 
 
 @pytest.fixture()
