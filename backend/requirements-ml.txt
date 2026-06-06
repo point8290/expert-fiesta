@@ -1,0 +1,5 @@
+# Heavy runtime-only deps for real audio analysis (lazily imported, not needed
+# for the test suite). Install alongside requirements.txt to run the live app.
+librosa
+numpy
+soundfile
