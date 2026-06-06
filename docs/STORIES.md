@@ -35,7 +35,7 @@ prompt, and emotional arc from my idea.*
 - AC4: A system prompt forbids referencing real artists/songs/lyrics/melodies.
 - AC5: Generated lyrics are persisted and re-fetchable via `GET`.
 
-### P1-S3 — Upload project audio · `todo`
+### P1-S3 — Upload project audio · `done`
 *As a creator, I want to upload an MP3/WAV so the video can be timed to my song.*
 
 - AC1: `POST /projects/{id}/audio` accepts MP3/WAV multipart upload, stores it

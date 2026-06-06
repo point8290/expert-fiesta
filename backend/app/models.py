@@ -6,7 +6,9 @@ Lyrics, Character, Scene, and Job tables (see docs/BUILD_PLAN.md §2).
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, ForeignKey, Integer, JSON, String
+from typing import Optional
+
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -51,3 +53,22 @@ class Lyrics(Base):
     body: Mapped[str] = mapped_column(String, nullable=False)
     music_prompt: Mapped[str] = mapped_column(String, nullable=False)
     emotional_arc: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class Audio(Base):
+    """One audio track per project. Analysis fields (P1-S4) are filled in later."""
+
+    __tablename__ = "audio"
+
+    project_id: Mapped[str] = mapped_column(
+        String, ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    )
+    filename: Mapped[str] = mapped_column(String, nullable=False)
+    content_type: Mapped[str] = mapped_column(String, nullable=False)
+    path: Mapped[str] = mapped_column(String, nullable=False)
+    source: Mapped[str] = mapped_column(String, nullable=False, default="upload")
+    duration_seconds: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    bpm: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    beats: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    sections: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    waveform: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)

@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from .database import Base, engine
-from .routers import lyrics, projects
+from .routers import audio, lyrics, projects
 
 
 @asynccontextmanager
@@ -24,3 +24,4 @@ def health():
 
 app.include_router(projects.router)
 app.include_router(lyrics.router)
+app.include_router(audio.router)

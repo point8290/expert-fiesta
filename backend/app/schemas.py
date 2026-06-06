@@ -50,6 +50,18 @@ class ProjectRead(CamelModel):
     updated_at: datetime
 
 
+class AudioRead(CamelModel):
+    project_id: str
+    filename: str
+    content_type: str
+    source: str
+    duration_seconds: Optional[float] = None
+    bpm: Optional[float] = None
+    beats: Optional[list[float]] = None
+    sections: Optional[list] = None
+    waveform: Optional[list[float]] = None
+
+
 class LyricsData(CamelModel):
     """The structured lyrics payload produced by the LLM and returned by the API."""
 
