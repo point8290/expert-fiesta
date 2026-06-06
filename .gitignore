@@ -5,9 +5,14 @@ __pycache__/
 .pytest_cache/
 *.db
 
-# Local assets / generated media
-projects/
+# Local assets / generated media (runtime storage dir, repo-root or backend/)
+/projects/
+backend/projects/
 backend/localmv.db
+
+# Build artifacts
+frontend/tsconfig.tsbuildinfo
+.next/
 
 # Node
 node_modules/

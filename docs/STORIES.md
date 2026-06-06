@@ -84,7 +84,7 @@ waveform so scenes can be timed.*
 - AC3: Render runs behind a mockable FFmpeg adapter (no ffmpeg needed in tests).
 - AC4: Rendering with missing/unapproved clips returns a clear error.
 
-### P1-S9 — Frontend review screens · `todo`
+### P1-S9 — Frontend review screens · `done`
 *As a creator, I want screens for dashboard, project, lyrics, audio, storyboard,
 clips, and final render.*
 
