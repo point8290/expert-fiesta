@@ -111,7 +111,7 @@ clips, and final render.*
   `identityAnchors[]`.
 - AC2: Characters persist and are editable.
 
-### P2-S3 — Generate character reference images · `todo`
+### P2-S3 — Generate character reference images · `done`
 - AC1: One reference image per character via ComfyUI.
 - AC2: View / approve / regenerate / replace manually.
 

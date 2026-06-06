@@ -50,4 +50,5 @@ module under `tests/` before its implementation lands under `app/`.
 |-------|-------------|--------|
 | P2-S1 | ComfyUI media adapter | ✅ done |
 | P2-S2 | Character bible | ✅ done |
-| P2-S3 | Character reference images | ⬜ next |
+| P2-S3 | Character reference images | ✅ done |
+| P2-S4 | Scene keyframes | ⬜ next |

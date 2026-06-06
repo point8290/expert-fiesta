@@ -1,16 +1,28 @@
-"""P2-S2 — Character bible endpoints."""
-from fastapi import APIRouter, Depends, HTTPException, status
+"""P2-S2 character bible + P2-S3 character reference image endpoints."""
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    UploadFile,
+    status,
+)
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from ..adapters.llm import LLMClient
+from ..comfyui.client import ImageGenerator
 from ..database import get_db
-from ..dependencies import get_llm_client
+from ..dependencies import get_image_generator, get_llm_client, get_storage
 from ..models import Character, Lyrics, Project
 from ..schemas import CharacterRead, CharacterUpdate
 from ..services.characters import CharacterGenerationError, generate_characters
+from ..services.images import generate_character_reference
+from ..storage import Storage
 
 router = APIRouter(tags=["characters"])
+
+ALLOWED_IMAGE_TYPES = {"image/png", "image/jpeg", "image/webp"}
 
 
 def _get_project_or_404(db: Session, project_id: str) -> Project:
@@ -74,3 +86,62 @@ def update_character(
     db.commit()
     db.refresh(character)
     return character
+
+
+@router.post("/characters/{character_id}/reference", response_model=CharacterRead)
+def generate_reference(
+    character_id: str,
+    db: Session = Depends(get_db),
+    generator: ImageGenerator = Depends(get_image_generator),
+    storage: Storage = Depends(get_storage),
+):
+    character = _get_character_or_404(db, character_id)
+    project = db.get(Project, character.project_id)
+    path = generate_character_reference(project, character, generator, storage)
+    character.ref_image_path = path
+    character.ref_status = "generated"
+    db.commit()
+    db.refresh(character)
+    return character
+
+
+@router.post(
+    "/characters/{character_id}/reference/approve", response_model=CharacterRead
+)
+def approve_reference(character_id: str, db: Session = Depends(get_db)):
+    character = _get_character_or_404(db, character_id)
+    character.ref_status = "approved"
+    db.commit()
+    db.refresh(character)
+    return character
+
+
+@router.post(
+    "/characters/{character_id}/reference/upload", response_model=CharacterRead
+)
+def upload_reference(
+    character_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    storage: Storage = Depends(get_storage),
+):
+    character = _get_character_or_404(db, character_id)
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"Unsupported image type: {file.content_type}",
+        )
+    path = storage.save_upload(
+        character.project_id, "characters", f"{character_id}{_suffix(file.filename)}", file.file
+    )
+    character.ref_image_path = str(path)
+    character.ref_status = "approved"
+    db.commit()
+    db.refresh(character)
+    return character
+
+
+def _suffix(filename: str | None) -> str:
+    if filename and "." in filename:
+        return filename[filename.rfind(".") :]
+    return ".png"
