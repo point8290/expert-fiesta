@@ -14,15 +14,22 @@ from sqlalchemy import select
 from ..adapters.llm import LLMClient
 from ..comfyui.client import ImageGenerator
 from ..database import get_db
-from ..dependencies import get_image_generator, get_llm_client, get_storage
+from ..dependencies import (
+    get_image_generator,
+    get_llm_client,
+    get_storage,
+    get_video_backend,
+)
 from ..models import Character, Project, Scene
-from ..schemas import SceneRead, SceneUpdate
+from ..schemas import JobRead, SceneRead, SceneUpdate
 from ..services.images import generate_scene_keyframe
+from ..services.jobs import execute_job
 from ..services.storyboard import (
     StoryboardGenerationError,
     regenerate_scene_content,
 )
 from ..storage import Storage
+from ..video.backends import VideoBackend
 
 router = APIRouter(prefix="/scenes", tags=["scenes"])
 
@@ -144,6 +151,46 @@ def generate_keyframe(
 def approve_keyframe(scene_id: str, db: Session = Depends(get_db)):
     scene = _get_scene_or_404(db, scene_id)
     scene.keyframe_status = "approved"
+    db.commit()
+    db.refresh(scene)
+    return scene
+
+
+@router.post("/{scene_id}/clip/generate", response_model=JobRead)
+def generate_clip(
+    scene_id: str,
+    db: Session = Depends(get_db),
+    backend: VideoBackend = Depends(get_video_backend),
+    storage: Storage = Depends(get_storage),
+):
+    scene = _get_scene_or_404(db, scene_id)
+    if scene.keyframe_status != "approved" or not scene.keyframe_path:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Scene needs an approved keyframe before generating a clip",
+        )
+
+    def task(progress):
+        progress(0.1)
+        output = storage.project_dir(scene.project_id, "scenes", scene_id) / "clip.mp4"
+        backend.generate(
+            scene.keyframe_path,
+            scene.video_prompt,
+            scene.negative_prompt,
+            str(output),
+        )
+        scene.clip_path = str(output)
+        scene.clip_status = "generated"
+        db.commit()
+        return str(output)
+
+    return execute_job(db, "clip", scene.project_id, task, scene_id=scene_id)
+
+
+@router.post("/{scene_id}/clip/approve", response_model=SceneRead)
+def approve_clip(scene_id: str, db: Session = Depends(get_db)):
+    scene = _get_scene_or_404(db, scene_id)
+    scene.clip_status = "approved"
     db.commit()
     db.refresh(scene)
     return scene

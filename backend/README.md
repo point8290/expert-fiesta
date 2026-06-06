@@ -54,3 +54,12 @@ module under `tests/` before its implementation lands under `app/`.
 | P2-S4 | Scene keyframes | ✅ done |
 | P2-S5 | Character consistency | ✅ done |
 | P2-S6 | Async jobs + progress | ✅ done |
+
+## Phase 3
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| P3-S1 | VideoBackend interface + LTX-Video | ✅ done |
+| P3-S2 | Generate scene clips (job queue) | ✅ done |
+| P3-S3 | Review clips (approve) | ✅ done |
+| P3-S4 | Render with generated clips | ✅ done |

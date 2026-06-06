@@ -131,18 +131,18 @@ clips, and final render.*
 
 ## Phase 3 — Local Video Generation
 
-### P3-S1 — VideoBackend interface + LTX-Video · `todo`
+### P3-S1 — VideoBackend interface + LTX-Video · `done`
 - AC1: `VideoBackend` contract: `(keyframe, videoPrompt, negativePrompt) → clip.mp4`.
 - AC2: `LTXBackend` implements it via a ComfyUI workflow.
 
-### P3-S2 — Generate scene clips · `todo`
+### P3-S2 — Generate scene clips · `done`
 - AC1: Each approved keyframe produces a ~5s clip.
 - AC2: Clips persist with `clipStatus`.
 
-### P3-S3 — Review clips · `todo`
+### P3-S3 — Review clips · `done`
 - AC1: Preview / approve / regenerate / upload replacement / mark final per scene.
 
-### P3-S4 — Render with generated clips · `todo`
+### P3-S4 — Render with generated clips · `done`
 - AC1: Final render consumes generated clips through the unchanged Phase 1 path.
 - AC2: ≥70% of scenes usable within 1–3 generations (tracked metric).
 

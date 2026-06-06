@@ -6,6 +6,7 @@ from .adapters.llm import LLMClient, OllamaClient
 from .adapters.render import FFmpegRenderer, Renderer
 from .comfyui.client import ComfyUIClient, ImageGenerator
 from .storage import Storage
+from .video.backends import LTXBackend, VideoBackend
 
 
 def get_llm_client() -> LLMClient:
@@ -26,3 +27,7 @@ def get_renderer() -> Renderer:
 
 def get_image_generator() -> ImageGenerator:
     return ComfyUIClient()
+
+
+def get_video_backend() -> VideoBackend:
+    return LTXBackend()
