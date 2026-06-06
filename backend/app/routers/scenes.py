@@ -9,11 +9,15 @@ from fastapi import (
 )
 from sqlalchemy.orm import Session
 
+from sqlalchemy import select
+
 from ..adapters.llm import LLMClient
+from ..comfyui.client import ImageGenerator
 from ..database import get_db
-from ..dependencies import get_llm_client, get_storage
-from ..models import Project, Scene
+from ..dependencies import get_image_generator, get_llm_client, get_storage
+from ..models import Character, Project, Scene
 from ..schemas import SceneRead, SceneUpdate
+from ..services.images import generate_scene_keyframe
 from ..services.storyboard import (
     StoryboardGenerationError,
     regenerate_scene_content,
@@ -29,6 +33,13 @@ ALLOWED_VIDEO_TYPES = {
     "video/x-matroska",
     "video/x-msvideo",
 }
+ALLOWED_IMAGE_TYPES = {"image/png", "image/jpeg", "image/webp"}
+
+
+def _image_suffix(filename: str | None) -> str:
+    if filename and "." in filename:
+        return filename[filename.rfind(".") :]
+    return ".png"
 
 
 def _get_scene_or_404(db: Session, scene_id: str) -> Scene:
@@ -104,6 +115,61 @@ def upload_clip(
 def finalize_scene(scene_id: str, db: Session = Depends(get_db)):
     scene = _get_scene_or_404(db, scene_id)
     scene.clip_status = "final"
+    db.commit()
+    db.refresh(scene)
+    return scene
+
+
+@router.post("/{scene_id}/keyframe", response_model=SceneRead)
+def generate_keyframe(
+    scene_id: str,
+    db: Session = Depends(get_db),
+    generator: ImageGenerator = Depends(get_image_generator),
+    storage: Storage = Depends(get_storage),
+):
+    scene = _get_scene_or_404(db, scene_id)
+    project = db.get(Project, scene.project_id)
+    characters = list(
+        db.scalars(select(Character).where(Character.project_id == scene.project_id))
+    )
+    path = generate_scene_keyframe(project, scene, characters, generator, storage)
+    scene.keyframe_path = path
+    scene.keyframe_status = "generated"
+    db.commit()
+    db.refresh(scene)
+    return scene
+
+
+@router.post("/{scene_id}/keyframe/approve", response_model=SceneRead)
+def approve_keyframe(scene_id: str, db: Session = Depends(get_db)):
+    scene = _get_scene_or_404(db, scene_id)
+    scene.keyframe_status = "approved"
+    db.commit()
+    db.refresh(scene)
+    return scene
+
+
+@router.post("/{scene_id}/keyframe/upload", response_model=SceneRead)
+def upload_keyframe(
+    scene_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    storage: Storage = Depends(get_storage),
+):
+    scene = _get_scene_or_404(db, scene_id)
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail=f"Unsupported image type: {file.content_type}",
+        )
+    path = storage.save_upload(
+        scene.project_id,
+        f"scenes/{scene_id}",
+        f"keyframe{_image_suffix(file.filename)}",
+        file.file,
+    )
+    scene.keyframe_path = str(path)
+    scene.keyframe_status = "approved"
     db.commit()
     db.refresh(scene)
     return scene

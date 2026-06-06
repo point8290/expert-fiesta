@@ -115,7 +115,7 @@ clips, and final render.*
 - AC1: One reference image per character via ComfyUI.
 - AC2: View / approve / regenerate / replace manually.
 
-### P2-S4 — Generate scene keyframes · `todo`
+### P2-S4 — Generate scene keyframes · `done`
 - AC1: One keyframe per scene; prompt = keyframePrompt + identity anchors +
   negative prompt + seed.
 - AC2: View / approve / regenerate / edit prompt / replace manually.
