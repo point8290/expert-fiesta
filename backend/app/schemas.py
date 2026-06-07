@@ -66,6 +66,10 @@ class AudioAnalysis(CamelModel):
     waveform: list[float]
 
 
+class BeatCutsRead(CamelModel):
+    cuts: list[float]
+
+
 class AudioRead(CamelModel):
     project_id: str
     filename: str

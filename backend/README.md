@@ -72,3 +72,4 @@ module under `tests/` before its implementation lands under `app/`.
 | P4-S2 | HunyuanVideo backend | ✅ done |
 | P4-S3 | Prompt versioning | ✅ done |
 | P4-S5 | Transitions (crossfade) | ✅ done |
+| P4-S6 | Beat-synced cuts | ✅ done |

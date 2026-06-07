@@ -166,7 +166,7 @@ clips, and final render.*
 ### P4-S5 — Transitions · `done`
 - AC1: Render supports crossfades in addition to hard cuts.
 
-### P4-S6 — Beat-synced cuts · `todo`
+### P4-S6 — Beat-synced cuts · `done`
 - AC1: Suggest cut points aligned to detected beats.
 
 ---

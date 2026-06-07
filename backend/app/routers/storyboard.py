@@ -1,5 +1,5 @@
-"""P1-S5 — Storyboard generation endpoints."""
-from fastapi import APIRouter, Depends, HTTPException, status
+"""P1-S5 — Storyboard generation endpoints (+ P4-S6 beat-synced cut suggestions)."""
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
@@ -7,7 +7,8 @@ from ..adapters.llm import LLMClient
 from ..database import get_db
 from ..dependencies import get_llm_client
 from ..models import Audio, Lyrics, Project, Scene
-from ..schemas import SceneRead
+from ..schemas import BeatCutsRead, SceneRead
+from ..services.beat_cuts import suggest_cuts
 from ..services.prompt_versions import record_version
 from ..services.storyboard import StoryboardGenerationError, generate_storyboard
 
@@ -57,3 +58,20 @@ def list_scenes(project_id: str, db: Session = Depends(get_db)):
     _get_project_or_404(db, project_id)
     stmt = select(Scene).where(Scene.project_id == project_id).order_by(Scene.number)
     return list(db.scalars(stmt))
+
+
+@router.get("/projects/{project_id}/beat-cuts", response_model=BeatCutsRead)
+def beat_cuts(
+    project_id: str,
+    segments: int = Query(8, ge=1),
+    db: Session = Depends(get_db),
+):
+    _get_project_or_404(db, project_id)
+    audio = db.get(Audio, project_id)
+    if audio is None or not audio.beats or not audio.duration_seconds:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="No analyzed audio with beats"
+        )
+    return BeatCutsRead(
+        cuts=suggest_cuts(audio.beats, audio.duration_seconds, segments)
+    )
