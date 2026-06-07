@@ -100,6 +100,17 @@ export interface BeatCuts {
   cuts: number[];
 }
 
+export interface AuthToken {
+  accessToken: string;
+  tokenType: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  createdAt: string;
+}
+
 export interface Job {
   id: string;
   projectId: string;

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { AuthControls } from "@/components/AuthControls";
+import { RequireAuth } from "@/components/RequireAuth";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,14 +19,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <RequireAuth />
         <div className="container">
           <header className="row" style={{ marginBottom: 24 }}>
             <Link href="/">
               <strong>🎬 Local Music Video Studio</strong>
             </Link>
-            <Link href="/projects/new" className="btn">
-              New Project
-            </Link>
+            <AuthControls />
           </header>
           {children}
         </div>
