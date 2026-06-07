@@ -2,10 +2,13 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from .config import assert_production_ready, get_settings
+from .database import get_db
 from .routers import (
     audio,
     auth,
@@ -52,7 +55,20 @@ app.add_middleware(
 
 @app.get("/health", tags=["meta"])
 def health():
+    """Liveness — the process is up. No dependencies checked."""
     return {"status": "ok"}
+
+
+@app.get("/ready", tags=["meta"])
+def ready(db: Session = Depends(get_db)):
+    """Readiness — verify the database is reachable before taking traffic."""
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE, detail="database unavailable"
+        ) from exc
+    return {"status": "ready", "checks": {"database": "ok"}}
 
 
 app.include_router(auth.router)

@@ -1,5 +1,5 @@
 """P1-S1 — Create and manage projects (owner-scoped, P5-S2)."""
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -15,6 +15,7 @@ from ..schemas import (
     ProjectUpdate,
 )
 from ..services.export_import import export_project, import_project
+from ..services.quota import assert_project_quota
 from ..services.templates import get_template
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -26,6 +27,7 @@ def create_project(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    assert_project_quota(db, current_user)
     project = Project(**payload.model_dump(), owner_id=current_user.id)
     db.add(project)
     db.commit()
@@ -44,6 +46,7 @@ def create_from_template(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    assert_project_quota(db, current_user)
     template = get_template(template_id)
     if template is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Template not found")
@@ -78,6 +81,8 @@ def import_project_endpoint(
 
 @router.get("", response_model=list[ProjectRead])
 def list_projects(
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -85,6 +90,8 @@ def list_projects(
         select(Project)
         .where(Project.owner_id == current_user.id)
         .order_by(Project.created_at.desc())
+        .offset(offset)
+        .limit(limit)
     )
     return list(db.scalars(stmt))
 

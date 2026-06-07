@@ -69,14 +69,14 @@ Status: `todo` · `in-progress` · `done`
 ### PR1-3 — Error tracking · `todo`
 - AC1: Sentry (or similar) wired on backend + frontend, opt-in via DSN env.
 
-### PR1-4 — Readiness probe · `todo`
+### PR1-4 — Readiness probe · `done`
 - AC1: `GET /ready` checks DB connectivity (and optionally model servers); `/health` stays liveness-only.
 
-### PR1-5 — Per-user quotas · `todo`
+### PR1-5 — Per-user quotas · `done`
 - AC1: configurable caps on generation jobs / projects per user; over-limit → 429.
 - AC2: enforcement reads the existing usage metering.
 
-### PR1-6 — Pagination · `todo`
+### PR1-6 — Pagination · `done`
 - AC1: `GET /projects`, `/scenes`, `/projects/{id}/jobs` accept `limit`/`offset` (or cursor) with sane defaults/caps.
 
 ### PR1-7 — CI publish + deploy · `todo`

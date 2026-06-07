@@ -51,11 +51,19 @@ def create_storyboard(
 @router.get("/projects/{project_id}/scenes", response_model=list[SceneRead])
 def list_scenes(
     project_id: str,
+    limit: int = Query(200, ge=1, le=500),
+    offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     require_project(db, project_id, current_user)
-    stmt = select(Scene).where(Scene.project_id == project_id).order_by(Scene.number)
+    stmt = (
+        select(Scene)
+        .where(Scene.project_id == project_id)
+        .order_by(Scene.number)
+        .offset(offset)
+        .limit(limit)
+    )
     return list(db.scalars(stmt))
 
 

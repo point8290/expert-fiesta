@@ -31,6 +31,10 @@ class Settings(BaseSettings):
     # them; when false (default), they run inline in the request.
     async_jobs: bool = False
 
+    # Per-user quotas
+    max_projects_per_user: int = 50
+    max_active_jobs_per_user: int = 50
+
     # Model servers / external services
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "llama3.1"
