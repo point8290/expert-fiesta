@@ -111,6 +111,28 @@ export interface User {
   createdAt: string;
 }
 
+export interface ProjectTemplate {
+  id: string;
+  name: string;
+  genre: string;
+  mood: string;
+  visualStyle: string;
+  aspectRatio: string;
+  targetDuration: number;
+  videoBackend: string;
+  transition: string;
+}
+
+export interface ExportPreset {
+  id: string;
+  name: string;
+  platform: string;
+  width: number;
+  height: number;
+  fps: number;
+  format: string;
+}
+
 export interface Job {
   id: string;
   projectId: string;

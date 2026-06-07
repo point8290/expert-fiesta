@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { api } from "@/lib/api";
-import type { ProjectCreate } from "@/lib/types";
+import type { ProjectCreate, ProjectTemplate } from "@/lib/types";
 
 const EMPTY: ProjectCreate = {
   title: "",
@@ -19,11 +19,29 @@ const EMPTY: ProjectCreate = {
 export default function NewProjectPage() {
   const router = useRouter();
   const [form, setForm] = useState<ProjectCreate>(EMPTY);
+  const [templates, setTemplates] = useState<ProjectTemplate[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    api.listTemplates().then(setTemplates).catch(() => {});
+  }, []);
+
   function set<K extends keyof ProjectCreate>(key: K, value: ProjectCreate[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function applyTemplate(id: string) {
+    const t = templates.find((t) => t.id === id);
+    if (!t) return;
+    setForm((f) => ({
+      ...f,
+      genre: t.genre,
+      mood: t.mood,
+      visualStyle: t.visualStyle,
+      aspectRatio: t.aspectRatio,
+      targetDuration: t.targetDuration,
+    }));
   }
 
   async function submit(e: React.FormEvent) {
@@ -43,6 +61,22 @@ export default function NewProjectPage() {
     <main>
       <h1>New Project</h1>
       <form onSubmit={submit} className="section">
+        {templates.length > 0 && (
+          <>
+            <label>Start from a template (optional)</label>
+            <select
+              defaultValue=""
+              onChange={(e) => applyTemplate(e.target.value)}
+            >
+              <option value="">— none —</option>
+              {templates.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
         <label>Title</label>
         <input
           value={form.title}
