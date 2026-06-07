@@ -68,4 +68,6 @@ module under `tests/` before its implementation lands under `app/`.
 
 | Story | Description | Status |
 |-------|-------------|--------|
+| P4-S1 | Wan 2.2 backend | ✅ done |
+| P4-S2 | HunyuanVideo backend | ✅ done |
 | P4-S3 | Prompt versioning | ✅ done |

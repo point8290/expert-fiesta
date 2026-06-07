@@ -10,7 +10,7 @@ from app.dependencies import (
     get_llm_client,
     get_renderer,
     get_storage,
-    get_video_backend,
+    get_video_registry,
 )
 from app.schemas import AudioAnalysis
 from app.storage import Storage
@@ -84,7 +84,9 @@ def setup(client, tmp_path, project_payload):
     client.app.dependency_overrides[get_storage] = lambda: Storage(tmp_path)
     client.app.dependency_overrides[get_audio_analyzer] = lambda: _Analyzer()
     client.app.dependency_overrides[get_image_generator] = lambda: FakeImageGen()
-    client.app.dependency_overrides[get_video_backend] = lambda: FakeVideoBackend()
+    client.app.dependency_overrides[get_video_registry] = lambda: {
+        "ltx": FakeVideoBackend()
+    }
     renderer = FakeRenderer()
     client.app.dependency_overrides[get_renderer] = lambda: renderer
 

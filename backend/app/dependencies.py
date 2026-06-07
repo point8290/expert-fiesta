@@ -6,7 +6,8 @@ from .adapters.llm import LLMClient, OllamaClient
 from .adapters.render import FFmpegRenderer, Renderer
 from .comfyui.client import ComfyUIClient, ImageGenerator
 from .storage import Storage
-from .video.backends import LTXBackend, VideoBackend
+from .video.backends import VideoBackend
+from .video.registry import build_registry
 
 
 def get_llm_client() -> LLMClient:
@@ -29,5 +30,6 @@ def get_image_generator() -> ImageGenerator:
     return ComfyUIClient()
 
 
-def get_video_backend() -> VideoBackend:
-    return LTXBackend()
+def get_video_registry() -> dict[str, VideoBackend]:
+    """All available video backends, keyed by name; project selects one."""
+    return build_registry()

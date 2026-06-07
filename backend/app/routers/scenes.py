@@ -18,7 +18,7 @@ from ..dependencies import (
     get_image_generator,
     get_llm_client,
     get_storage,
-    get_video_backend,
+    get_video_registry,
 )
 from ..models import Character, Project, PromptVersion, Scene
 from ..schemas import JobRead, PromptVersionRead, SceneRead, SceneUpdate
@@ -185,7 +185,7 @@ def approve_keyframe(scene_id: str, db: Session = Depends(get_db)):
 def generate_clip(
     scene_id: str,
     db: Session = Depends(get_db),
-    backend: VideoBackend = Depends(get_video_backend),
+    registry: dict[str, VideoBackend] = Depends(get_video_registry),
     storage: Storage = Depends(get_storage),
 ):
     scene = _get_scene_or_404(db, scene_id)
@@ -193,6 +193,13 @@ def generate_clip(
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail="Scene needs an approved keyframe before generating a clip",
+        )
+    project = db.get(Project, scene.project_id)
+    backend = registry.get(project.video_backend)
+    if backend is None:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown video backend: {project.video_backend}",
         )
 
     def task(progress):

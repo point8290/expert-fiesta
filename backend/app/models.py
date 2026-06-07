@@ -34,6 +34,7 @@ class Project(Base):
     target_duration: Mapped[int] = mapped_column(Integer, nullable=False)
     aspect_ratio: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False, default="draft")
+    video_backend: Mapped[str] = mapped_column(String, nullable=False, default="ltx")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=_now, onupdate=_now

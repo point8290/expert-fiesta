@@ -150,10 +150,10 @@ clips, and final render.*
 
 ## Phase 4 — Better Quality
 
-### P4-S1 — Wan 2.2 backend · `todo`
+### P4-S1 — Wan 2.2 backend · `done`
 - AC1: `WanBackend` implements `VideoBackend`; selectable per project/scene.
 
-### P4-S2 — HunyuanVideo backend · `todo`
+### P4-S2 — HunyuanVideo backend · `done`
 - AC1: `HunyuanBackend` implements `VideoBackend`; selectable per project/scene.
 
 ### P4-S3 — Prompt versioning · `done`

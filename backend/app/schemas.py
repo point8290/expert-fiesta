@@ -34,6 +34,7 @@ class ProjectUpdate(CamelModel):
     visual_style: Optional[str] = None
     target_duration: Optional[int] = Field(default=None, gt=0)
     aspect_ratio: Optional[str] = None
+    video_backend: Optional[str] = None
 
 
 class ProjectRead(CamelModel):
@@ -46,6 +47,7 @@ class ProjectRead(CamelModel):
     target_duration: int
     aspect_ratio: str
     status: str
+    video_backend: str
     created_at: datetime
     updated_at: datetime
 
