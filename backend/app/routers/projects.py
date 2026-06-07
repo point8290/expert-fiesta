@@ -5,7 +5,13 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import Project
-from ..schemas import ProjectCreate, ProjectRead, ProjectUpdate
+from ..schemas import (
+    ProjectCreate,
+    ProjectFromTemplate,
+    ProjectRead,
+    ProjectUpdate,
+)
+from ..services.templates import get_template
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -20,6 +26,36 @@ def _get_or_404(db: Session, project_id: str) -> Project:
 @router.post("", response_model=ProjectRead, status_code=status.HTTP_201_CREATED)
 def create_project(payload: ProjectCreate, db: Session = Depends(get_db)):
     project = Project(**payload.model_dump())
+    db.add(project)
+    db.commit()
+    db.refresh(project)
+    return project
+
+
+@router.post(
+    "/from-template/{template_id}",
+    response_model=ProjectRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_from_template(
+    template_id: str,
+    payload: ProjectFromTemplate,
+    db: Session = Depends(get_db),
+):
+    template = get_template(template_id)
+    if template is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Template not found")
+    project = Project(
+        title=payload.title,
+        idea=payload.idea,
+        genre=template.genre,
+        mood=template.mood,
+        visual_style=template.visual_style,
+        target_duration=template.target_duration,
+        aspect_ratio=template.aspect_ratio,
+        video_backend=template.video_backend,
+        transition=template.transition,
+    )
     db.add(project)
     db.commit()
     db.refresh(project)

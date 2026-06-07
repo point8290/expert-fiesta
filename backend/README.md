@@ -74,3 +74,9 @@ module under `tests/` before its implementation lands under `app/`.
 | P4-S4 | Consistency scoring + LoRA | ✅ done |
 | P4-S5 | Transitions (crossfade) | ✅ done |
 | P4-S6 | Beat-synced cuts | ✅ done |
+
+## Phase 5 (in progress)
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| P5-S1 | Templates + export presets | ✅ done |

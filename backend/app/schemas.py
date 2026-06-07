@@ -16,6 +16,33 @@ class CamelModel(BaseModel):
     )
 
 
+class ProjectTemplateRead(CamelModel):
+    id: str
+    name: str
+    genre: str
+    mood: str
+    visual_style: str
+    aspect_ratio: str
+    target_duration: int
+    video_backend: str
+    transition: str
+
+
+class ProjectFromTemplate(CamelModel):
+    title: str = Field(min_length=1)
+    idea: str = Field(min_length=1)
+
+
+class ExportPresetRead(CamelModel):
+    id: str
+    name: str
+    platform: str
+    width: int
+    height: int
+    fps: int
+    format: str
+
+
 class ProjectCreate(CamelModel):
     title: str = Field(min_length=1)
     idea: str = Field(min_length=1)
