@@ -185,7 +185,7 @@ clips, and final render.*
 ### P5-S4 — Cloud fallback · `done`
 - AC1: Opt-in cloud generation for difficult scenes behind the same backend interface.
 
-### P5-S5 — Usage tracking + SaaS · `todo`
+### P5-S5 — Usage tracking + SaaS · `done`
 - AC1: Usage metering; optional billing layer.
 
 ### P5-S6 — Local song generation · `done`

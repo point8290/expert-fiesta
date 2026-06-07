@@ -226,6 +226,13 @@ class RenderRead(CamelModel):
     output_path: str
 
 
+class UsageSummary(CamelModel):
+    total_jobs: int
+    succeeded: int
+    failed: int
+    by_type: dict[str, int]
+
+
 class LyricsData(CamelModel):
     """The structured lyrics payload produced by the LLM and returned by the API."""
 
