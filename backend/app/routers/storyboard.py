@@ -5,21 +5,15 @@ from sqlalchemy.orm import Session
 
 from ..adapters.llm import LLMClient
 from ..database import get_db
-from ..dependencies import get_llm_client
-from ..models import Audio, Lyrics, Project, Scene
+from ..dependencies import get_current_user, get_llm_client
+from ..models import Audio, Lyrics, Scene, User
+from ..ownership import require_project
 from ..schemas import BeatCutsRead, SceneRead
 from ..services.beat_cuts import suggest_cuts
 from ..services.prompt_versions import record_version
 from ..services.storyboard import StoryboardGenerationError, generate_storyboard
 
 router = APIRouter(tags=["storyboard"])
-
-
-def _get_project_or_404(db: Session, project_id: str) -> Project:
-    project = db.get(Project, project_id)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Project not found")
-    return project
 
 
 @router.post(
@@ -31,8 +25,9 @@ def create_storyboard(
     project_id: str,
     db: Session = Depends(get_db),
     llm: LLMClient = Depends(get_llm_client),
+    current_user: User = Depends(get_current_user),
 ):
-    project = _get_project_or_404(db, project_id)
+    project = require_project(db, project_id, current_user)
     lyrics = db.get(Lyrics, project_id)
     audio = db.get(Audio, project_id)
 
@@ -54,8 +49,12 @@ def create_storyboard(
 
 
 @router.get("/projects/{project_id}/scenes", response_model=list[SceneRead])
-def list_scenes(project_id: str, db: Session = Depends(get_db)):
-    _get_project_or_404(db, project_id)
+def list_scenes(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_project(db, project_id, current_user)
     stmt = select(Scene).where(Scene.project_id == project_id).order_by(Scene.number)
     return list(db.scalars(stmt))
 
@@ -65,8 +64,9 @@ def beat_cuts(
     project_id: str,
     segments: int = Query(8, ge=1),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    _get_project_or_404(db, project_id)
+    require_project(db, project_id, current_user)
     audio = db.get(Audio, project_id)
     if audio is None or not audio.beats or not audio.duration_seconds:
         raise HTTPException(

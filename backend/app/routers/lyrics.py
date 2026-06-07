@@ -4,19 +4,13 @@ from sqlalchemy.orm import Session
 
 from ..adapters.llm import LLMClient
 from ..database import get_db
-from ..dependencies import get_llm_client
-from ..models import Lyrics, Project
+from ..dependencies import get_current_user, get_llm_client
+from ..models import Lyrics, User
+from ..ownership import require_project
 from ..schemas import LyricsData
 from ..services.lyrics import LyricsGenerationError, generate_lyrics
 
 router = APIRouter(prefix="/projects/{project_id}/lyrics", tags=["lyrics"])
-
-
-def _get_project_or_404(db: Session, project_id: str) -> Project:
-    project = db.get(Project, project_id)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Project not found")
-    return project
 
 
 @router.post("", response_model=LyricsData, status_code=status.HTTP_201_CREATED)
@@ -24,8 +18,9 @@ def create_lyrics(
     project_id: str,
     db: Session = Depends(get_db),
     llm: LLMClient = Depends(get_llm_client),
+    current_user: User = Depends(get_current_user),
 ):
-    project = _get_project_or_404(db, project_id)
+    project = require_project(db, project_id, current_user)
     try:
         data = generate_lyrics(project, llm)
     except LyricsGenerationError as exc:
@@ -48,8 +43,12 @@ def create_lyrics(
 
 
 @router.get("", response_model=LyricsData)
-def get_lyrics(project_id: str, db: Session = Depends(get_db)):
-    _get_project_or_404(db, project_id)
+def get_lyrics(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_project(db, project_id, current_user)
     row = db.get(Lyrics, project_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Lyrics not found")

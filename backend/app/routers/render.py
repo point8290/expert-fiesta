@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session
 
 from ..adapters.render import Renderer
 from ..database import get_db
-from ..dependencies import get_renderer, get_storage
-from ..models import Audio, Project, Scene
+from ..dependencies import get_current_user, get_renderer, get_storage
+from ..models import Audio, Scene, User
+from ..ownership import require_project
 from ..schemas import RenderRead
 from ..services.export_presets import get_preset
 from ..services.render import RenderError, render_project
@@ -22,10 +23,9 @@ def render_final(
     db: Session = Depends(get_db),
     renderer: Renderer = Depends(get_renderer),
     storage: Storage = Depends(get_storage),
+    current_user: User = Depends(get_current_user),
 ):
-    project = db.get(Project, project_id)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Project not found")
+    project = require_project(db, project_id, current_user)
 
     resolved_preset = None
     if preset is not None:

@@ -22,10 +22,24 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+class User(Base):
+    """An authenticated account that owns projects (P5-S2)."""
+
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
+
+
 class Project(Base):
     __tablename__ = "projects"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    owner_id: Mapped[Optional[str]] = mapped_column(
+        String, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=True
+    )
     title: Mapped[str] = mapped_column(String, nullable=False)
     idea: Mapped[str] = mapped_column(String, nullable=False)
     genre: Mapped[str] = mapped_column(String, nullable=False)

@@ -1,10 +1,12 @@
-"""P1-S1 — Create and manage projects."""
+"""P1-S1 — Create and manage projects (owner-scoped, P5-S2)."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import Project
+from ..dependencies import get_current_user
+from ..models import Project, User
+from ..ownership import require_project
 from ..schemas import (
     ProjectCreate,
     ProjectExport,
@@ -18,16 +20,13 @@ from ..services.templates import get_template
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
-def _get_or_404(db: Session, project_id: str) -> Project:
-    project = db.get(Project, project_id)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Project not found")
-    return project
-
-
 @router.post("", response_model=ProjectRead, status_code=status.HTTP_201_CREATED)
-def create_project(payload: ProjectCreate, db: Session = Depends(get_db)):
-    project = Project(**payload.model_dump())
+def create_project(
+    payload: ProjectCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    project = Project(**payload.model_dump(), owner_id=current_user.id)
     db.add(project)
     db.commit()
     db.refresh(project)
@@ -43,11 +42,13 @@ def create_from_template(
     template_id: str,
     payload: ProjectFromTemplate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     template = get_template(template_id)
     if template is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Template not found")
     project = Project(
+        owner_id=current_user.id,
         title=payload.title,
         idea=payload.idea,
         genre=template.genre,
@@ -68,33 +69,53 @@ def create_from_template(
     "/import", response_model=ProjectRead, status_code=status.HTTP_201_CREATED
 )
 def import_project_endpoint(
-    payload: ProjectExport, db: Session = Depends(get_db)
+    payload: ProjectExport,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    return import_project(db, payload)
+    return import_project(db, payload, owner_id=current_user.id)
 
 
 @router.get("", response_model=list[ProjectRead])
-def list_projects(db: Session = Depends(get_db)):
-    stmt = select(Project).order_by(Project.created_at.desc())
+def list_projects(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    stmt = (
+        select(Project)
+        .where(Project.owner_id == current_user.id)
+        .order_by(Project.created_at.desc())
+    )
     return list(db.scalars(stmt))
 
 
 @router.get("/{project_id}/export", response_model=ProjectExport)
-def export_project_endpoint(project_id: str, db: Session = Depends(get_db)):
-    project = _get_or_404(db, project_id)
+def export_project_endpoint(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    project = require_project(db, project_id, current_user)
     return export_project(db, project)
 
 
 @router.get("/{project_id}", response_model=ProjectRead)
-def get_project(project_id: str, db: Session = Depends(get_db)):
-    return _get_or_404(db, project_id)
+def get_project(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return require_project(db, project_id, current_user)
 
 
 @router.patch("/{project_id}", response_model=ProjectRead)
 def update_project(
-    project_id: str, payload: ProjectUpdate, db: Session = Depends(get_db)
+    project_id: str,
+    payload: ProjectUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    project = _get_or_404(db, project_id)
+    project = require_project(db, project_id, current_user)
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(project, field, value)
     db.commit()
@@ -103,7 +124,11 @@ def update_project(
 
 
 @router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_project(project_id: str, db: Session = Depends(get_db)):
-    project = _get_or_404(db, project_id)
+def delete_project(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    project = require_project(db, project_id, current_user)
     db.delete(project)
     db.commit()

@@ -34,9 +34,12 @@ def export_project(db: Session, project: Project) -> ProjectExport:
     )
 
 
-def import_project(db: Session, export: ProjectExport) -> Project:
+def import_project(
+    db: Session, export: ProjectExport, owner_id: str | None = None
+) -> Project:
     src = export.project
     project = Project(
+        owner_id=owner_id,
         title=src.title,
         idea=src.idea,
         genre=src.genre,

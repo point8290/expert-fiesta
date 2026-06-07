@@ -2,8 +2,9 @@
 from app.models import Character, Lyrics, Project, Scene
 
 
-def _seed(db_session, payload):
+def _seed(db_session, payload, owner_id=None):
     project = Project(
+        owner_id=owner_id,
         title=payload["title"],
         idea=payload["idea"],
         genre=payload["genre"],
@@ -48,8 +49,8 @@ def _seed(db_session, payload):
     return project
 
 
-def test_export_project(client, db_session, project_payload):
-    project = _seed(db_session, project_payload)
+def test_export_project(client, db_session, project_payload, default_user):
+    project = _seed(db_session, project_payload, default_user.id)
     res = client.get(f"/projects/{project.id}/export")
     assert res.status_code == 200
     exp = res.json()
@@ -64,8 +65,8 @@ def test_export_unknown_project_returns_404(client):
     assert client.get("/projects/nope/export").status_code == 404
 
 
-def test_import_recreates_project_with_new_id(client, db_session, project_payload):
-    project = _seed(db_session, project_payload)
+def test_import_recreates_project_with_new_id(client, db_session, project_payload, default_user):
+    project = _seed(db_session, project_payload, default_user.id)
     exported = client.get(f"/projects/{project.id}/export").json()
 
     res = client.post("/projects/import", json=exported)
@@ -83,8 +84,8 @@ def test_import_recreates_project_with_new_id(client, db_session, project_payloa
     assert client.get(f"/projects/{new['id']}/lyrics").json()["title"] == "Wings"
 
 
-def test_import_resets_generated_assets(client, db_session, project_payload):
-    project = _seed(db_session, project_payload)
+def test_import_resets_generated_assets(client, db_session, project_payload, default_user):
+    project = _seed(db_session, project_payload, default_user.id)
     exported = client.get(f"/projects/{project.id}/export").json()
     new = client.post("/projects/import", json=exported).json()
     # Assets aren't copied; imported scenes start fresh.
