@@ -34,6 +34,9 @@ class Project(Base):
     target_duration: Mapped[int] = mapped_column(Integer, nullable=False)
     aspect_ratio: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False, default="draft")
+    video_backend: Mapped[str] = mapped_column(String, nullable=False, default="ltx")
+    transition: Mapped[str] = mapped_column(String, nullable=False, default="cut")
+    transition_duration: Mapped[float] = mapped_column(Float, nullable=False, default=0.5)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=_now, onupdate=_now
@@ -77,8 +80,26 @@ class Scene(Base):
     negative_prompt: Mapped[str] = mapped_column(String, default="")
     keyframe_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     keyframe_status: Mapped[str] = mapped_column(String, default="pending")
+    keyframe_prompt_version: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     clip_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     clip_status: Mapped[str] = mapped_column(String, default="pending")
+    clip_prompt_version: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+
+
+class PromptVersion(Base):
+    """A historical snapshot of a scene's generation prompts (P4-S3)."""
+
+    __tablename__ = "prompt_versions"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=_uuid)
+    scene_id: Mapped[str] = mapped_column(
+        String, ForeignKey("scenes.id", ondelete="CASCADE"), index=True
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    keyframe_prompt: Mapped[str] = mapped_column(String, default="")
+    video_prompt: Mapped[str] = mapped_column(String, default="")
+    negative_prompt: Mapped[str] = mapped_column(String, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
 
 
 class Character(Base):
@@ -99,6 +120,7 @@ class Character(Base):
     identity_anchors: Mapped[list] = mapped_column(JSON, default=list)
     ref_image_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     ref_status: Mapped[str] = mapped_column(String, default="pending")
+    lora_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
 
 class Job(Base):

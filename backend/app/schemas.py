@@ -34,6 +34,9 @@ class ProjectUpdate(CamelModel):
     visual_style: Optional[str] = None
     target_duration: Optional[int] = Field(default=None, gt=0)
     aspect_ratio: Optional[str] = None
+    video_backend: Optional[str] = None
+    transition: Optional[str] = None
+    transition_duration: Optional[float] = Field(default=None, ge=0)
 
 
 class ProjectRead(CamelModel):
@@ -46,6 +49,9 @@ class ProjectRead(CamelModel):
     target_duration: int
     aspect_ratio: str
     status: str
+    video_backend: str
+    transition: str
+    transition_duration: float
     created_at: datetime
     updated_at: datetime
 
@@ -58,6 +64,10 @@ class AudioAnalysis(CamelModel):
     beats: list[float]
     sections: list
     waveform: list[float]
+
+
+class BeatCutsRead(CamelModel):
+    cuts: list[float]
 
 
 class AudioRead(CamelModel):
@@ -92,6 +102,7 @@ class CharacterUpdate(CamelModel):
     clothing: Optional[str] = None
     personality: Optional[str] = None
     identity_anchors: Optional[list[str]] = None
+    lora_path: Optional[str] = None
 
 
 class CharacterRead(CamelModel):
@@ -106,6 +117,13 @@ class CharacterRead(CamelModel):
     identity_anchors: list[str]
     ref_image_path: Optional[str] = None
     ref_status: str
+    lora_path: Optional[str] = None
+
+
+class ConsistencyScoreRead(CamelModel):
+    scene_id: str
+    character_id: str
+    score: float
 
 
 class SceneContent(CamelModel):
@@ -117,6 +135,16 @@ class SceneContent(CamelModel):
     keyframe_prompt: str
     video_prompt: str
     negative_prompt: str
+
+
+class PromptVersionRead(CamelModel):
+    id: str
+    scene_id: str
+    version: int
+    keyframe_prompt: str
+    video_prompt: str
+    negative_prompt: str
+    created_at: datetime
 
 
 class SceneUpdate(CamelModel):
@@ -144,8 +172,10 @@ class SceneRead(CamelModel):
     negative_prompt: str
     keyframe_path: Optional[str] = None
     keyframe_status: str
+    keyframe_prompt_version: Optional[int] = None
     clip_path: Optional[str] = None
     clip_status: str
+    clip_prompt_version: Optional[int] = None
 
 
 class JobRead(CamelModel):

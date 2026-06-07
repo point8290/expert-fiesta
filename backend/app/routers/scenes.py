@@ -18,12 +18,17 @@ from ..dependencies import (
     get_image_generator,
     get_llm_client,
     get_storage,
-    get_video_backend,
+    get_video_registry,
 )
-from ..models import Character, Project, Scene
-from ..schemas import JobRead, SceneRead, SceneUpdate
+from ..models import Character, Project, PromptVersion, Scene
+from ..schemas import JobRead, PromptVersionRead, SceneRead, SceneUpdate
 from ..services.images import generate_scene_keyframe
 from ..services.jobs import execute_job
+from ..services.prompt_versions import (
+    PROMPT_FIELDS,
+    latest_version_number,
+    record_version,
+)
 from ..services.storyboard import (
     StoryboardGenerationError,
     regenerate_scene_content,
@@ -66,11 +71,29 @@ def update_scene(
     scene_id: str, payload: SceneUpdate, db: Session = Depends(get_db)
 ):
     scene = _get_scene_or_404(db, scene_id)
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    changes = payload.model_dump(exclude_unset=True)
+    prompt_changed = any(
+        field in changes and changes[field] != getattr(scene, field)
+        for field in PROMPT_FIELDS
+    )
+    for field, value in changes.items():
         setattr(scene, field, value)
+    if prompt_changed:
+        record_version(db, scene)
     db.commit()
     db.refresh(scene)
     return scene
+
+
+@router.get("/{scene_id}/prompt-versions", response_model=list[PromptVersionRead])
+def list_prompt_versions(scene_id: str, db: Session = Depends(get_db)):
+    _get_scene_or_404(db, scene_id)
+    stmt = (
+        select(PromptVersion)
+        .where(PromptVersion.scene_id == scene_id)
+        .order_by(PromptVersion.version)
+    )
+    return list(db.scalars(stmt))
 
 
 @router.post("/{scene_id}/regenerate-prompt", response_model=SceneRead)
@@ -88,6 +111,7 @@ def regenerate_scene_prompt(
 
     for field, value in content.model_dump().items():
         setattr(scene, field, value)
+    record_version(db, scene)
     db.commit()
     db.refresh(scene)
     return scene
@@ -142,6 +166,7 @@ def generate_keyframe(
     path = generate_scene_keyframe(project, scene, characters, generator, storage)
     scene.keyframe_path = path
     scene.keyframe_status = "generated"
+    scene.keyframe_prompt_version = latest_version_number(db, scene_id)
     db.commit()
     db.refresh(scene)
     return scene
@@ -160,7 +185,7 @@ def approve_keyframe(scene_id: str, db: Session = Depends(get_db)):
 def generate_clip(
     scene_id: str,
     db: Session = Depends(get_db),
-    backend: VideoBackend = Depends(get_video_backend),
+    registry: dict[str, VideoBackend] = Depends(get_video_registry),
     storage: Storage = Depends(get_storage),
 ):
     scene = _get_scene_or_404(db, scene_id)
@@ -168,6 +193,13 @@ def generate_clip(
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail="Scene needs an approved keyframe before generating a clip",
+        )
+    project = db.get(Project, scene.project_id)
+    backend = registry.get(project.video_backend)
+    if backend is None:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown video backend: {project.video_backend}",
         )
 
     def task(progress):
@@ -181,6 +213,7 @@ def generate_clip(
         )
         scene.clip_path = str(output)
         scene.clip_status = "generated"
+        scene.clip_prompt_version = latest_version_number(db, scene_id)
         db.commit()
         return str(output)
 

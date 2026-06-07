@@ -53,5 +53,7 @@ def render_project(
         width=width,
         height=height,
         fps=DEFAULT_FPS,
+        transition=getattr(project, "transition", None) or "cut",
+        transition_duration=getattr(project, "transition_duration", None) or 0.5,
     )
     return str(output_path)

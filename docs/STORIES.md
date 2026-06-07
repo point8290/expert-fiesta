@@ -150,23 +150,23 @@ clips, and final render.*
 
 ## Phase 4 — Better Quality
 
-### P4-S1 — Wan 2.2 backend · `todo`
+### P4-S1 — Wan 2.2 backend · `done`
 - AC1: `WanBackend` implements `VideoBackend`; selectable per project/scene.
 
-### P4-S2 — HunyuanVideo backend · `todo`
+### P4-S2 — HunyuanVideo backend · `done`
 - AC1: `HunyuanBackend` implements `VideoBackend`; selectable per project/scene.
 
-### P4-S3 — Prompt versioning · `todo`
+### P4-S3 — Prompt versioning · `done`
 - AC1: Prompt edits are versioned; each asset records the prompt version used.
 
-### P4-S4 — Consistency scoring + LoRA · `todo`
+### P4-S4 — Consistency scoring + LoRA · `done`
 - AC1: Face-embedding similarity score per character across scenes.
 - AC2: Optional per-character LoRA path.
 
-### P4-S5 — Transitions · `todo`
+### P4-S5 — Transitions · `done`
 - AC1: Render supports crossfades in addition to hard cuts.
 
-### P4-S6 — Beat-synced cuts · `todo`
+### P4-S6 — Beat-synced cuts · `done`
 - AC1: Suggest cut points aligned to detected beats.
 
 ---

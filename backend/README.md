@@ -63,3 +63,14 @@ module under `tests/` before its implementation lands under `app/`.
 | P3-S2 | Generate scene clips (job queue) | ✅ done |
 | P3-S3 | Review clips (approve) | ✅ done |
 | P3-S4 | Render with generated clips | ✅ done |
+
+## Phase 4 (in progress)
+
+| Story | Description | Status |
+|-------|-------------|--------|
+| P4-S1 | Wan 2.2 backend | ✅ done |
+| P4-S2 | HunyuanVideo backend | ✅ done |
+| P4-S3 | Prompt versioning | ✅ done |
+| P4-S4 | Consistency scoring + LoRA | ✅ done |
+| P4-S5 | Transitions (crossfade) | ✅ done |
+| P4-S6 | Beat-synced cuts | ✅ done |

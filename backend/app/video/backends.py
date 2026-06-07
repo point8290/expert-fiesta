@@ -1,8 +1,9 @@
-"""P3-S1 — Video generation backends.
+"""P3-S1 / P4-S1 / P4-S2 — Video generation backends.
 
 Every backend implements the same ``VideoBackend`` contract:
-``(keyframe, videoPrompt, negativePrompt) -> clip.mp4``. This is the swap point
-for LTX-Video (here) and, in Phase 4, Wan 2.2 and HunyuanVideo.
+``(keyframe, videoPrompt, negativePrompt) -> clip.mp4``. The three local backends
+(LTX-Video, Wan 2.2, HunyuanVideo) share the same parameter shape and only differ
+by their committed ComfyUI workflow template, so they subclass ``ComfyVideoBackend``.
 """
 import random
 from typing import Protocol
@@ -28,10 +29,10 @@ class VideoBackend(Protocol):
         ...
 
 
-class LTXBackend:
-    """LTX-Video image-to-video via a committed ComfyUI workflow."""
+class ComfyVideoBackend:
+    """Shared image-to-video backend driven by a named ComfyUI workflow."""
 
-    workflow = "ltx_video"
+    workflow: str = ""
 
     def __init__(self, comfy: ComfyUIClient | None = None):
         self.comfy = comfy or ComfyUIClient()
@@ -75,3 +76,21 @@ class LTXBackend:
         # Runtime: submit to ComfyUI and download the produced clip.
         self.comfy.generate(self.workflow, params, output_path)
         return output_path
+
+
+class LTXBackend(ComfyVideoBackend):
+    """LTX-Video image-to-video (fast, the MVP default)."""
+
+    workflow = "ltx_video"
+
+
+class WanBackend(ComfyVideoBackend):
+    """Wan 2.2 image-to-video."""
+
+    workflow = "wan_video"
+
+
+class HunyuanBackend(ComfyVideoBackend):
+    """HunyuanVideo image-to-video."""
+
+    workflow = "hunyuan_video"
