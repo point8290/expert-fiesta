@@ -56,7 +56,13 @@ The pipeline screen now exposes the full Phase 1–3 backend:
 - **Quality** — face-embedding character-consistency scores per keyframe and
   beat-synced cut suggestions; plus an optional per-character LoRA path on each
   `CharacterCard` (Phase 4).
-- **Render** — stitch approved clips into the final MP4 (Phase 1).
+- **Render** — stitch approved clips into the final MP4, with an optional
+  **export preset** (YouTube / TikTok / Instagram) overriding the resolution
+  (Phase 5).
+
+Project creation supports **starting from a template** (Phase 5), and the Audio
+step has a **Generate song** button that synthesizes audio locally from the
+lyrics' music prompt (Phase 5).
 
 Each control reads/writes its backend endpoint via the typed client in
 `lib/api.ts`.

@@ -6,10 +6,12 @@ import type {
   BeatCuts,
   Character,
   ConsistencyScore,
+  ExportPreset,
   Job,
   Lyrics,
   Project,
   ProjectCreate,
+  ProjectTemplate,
   RenderResult,
   Scene,
   User,
@@ -64,10 +66,22 @@ export const api = {
     request<AuthToken>("/auth/login", jsonInit("POST", { email, password })),
   me: () => request<User>("/auth/me"),
 
+  // Catalog (P5-S1)
+  listTemplates: () => request<ProjectTemplate[]>("/templates"),
+  listExportPresets: () => request<ExportPreset[]>("/export-presets"),
+
   // Projects
   listProjects: () => request<Project[]>("/projects"),
   createProject: (data: ProjectCreate) =>
     request<Project>("/projects", jsonInit("POST", data)),
+  createFromTemplate: (
+    templateId: string,
+    data: { title: string; idea: string },
+  ) =>
+    request<Project>(
+      `/projects/from-template/${templateId}`,
+      jsonInit("POST", data),
+    ),
   getProject: (id: string) => request<Project>(`/projects/${id}`),
   updateProject: (id: string, data: Partial<ProjectCreate>) =>
     request<Project>(`/projects/${id}`, jsonInit("PATCH", data)),
@@ -91,6 +105,8 @@ export const api = {
   getAudio: (id: string) => request<Audio>(`/projects/${id}/audio`),
   analyzeAudio: (id: string) =>
     request<Audio>(`/projects/${id}/audio/analyze`, { method: "POST" }),
+  generateSong: (id: string) =>
+    request<Audio>(`/projects/${id}/audio/generate`, { method: "POST" }),
 
   // Storyboard & scenes
   generateStoryboard: (id: string) =>
@@ -167,6 +183,9 @@ export const api = {
     request<BeatCuts>(`/projects/${id}/beat-cuts?segments=${segments}`),
 
   // Render
-  renderFinal: (id: string) =>
-    request<RenderResult>(`/projects/${id}/render`, { method: "POST" }),
+  renderFinal: (id: string, preset?: string) =>
+    request<RenderResult>(
+      `/projects/${id}/render${preset ? `?preset=${preset}` : ""}`,
+      { method: "POST" },
+    ),
 };

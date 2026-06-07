@@ -9,6 +9,7 @@ import type {
   Audio,
   Character,
   ConsistencyScore,
+  ExportPreset,
   Job,
   Lyrics,
   Project,
@@ -31,6 +32,8 @@ export default function ProjectPipelinePage({
   const [scores, setScores] = useState<ConsistencyScore[]>([]);
   const [cuts, setCuts] = useState<number[] | null>(null);
   const [segments, setSegments] = useState(8);
+  const [presets, setPresets] = useState<ExportPreset[]>([]);
+  const [preset, setPreset] = useState("");
   const [render, setRender] = useState<RenderResult | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +47,7 @@ export default function ProjectPipelinePage({
     api.getAudio(id).then(setAudio).catch(() => {});
     api.listCharacters(id).then(setCharacters).catch(() => {});
     api.listScenes(id).then(setScenes).catch(() => {});
+    api.listExportPresets().then(setPresets).catch(() => {});
     refreshJobs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -160,6 +164,16 @@ export default function ProjectPipelinePage({
               onClick={() => audioRef.current?.click()}
             >
               Upload
+            </button>
+            <button
+              className="btn secondary"
+              disabled={busy === "song"}
+              title="Generate a song locally from the lyrics' music prompt"
+              onClick={() =>
+                guard("song", async () => setAudio(await api.generateSong(id)))
+              }
+            >
+              Generate song
             </button>
             <button
               className="btn secondary"
@@ -333,15 +347,27 @@ export default function ProjectPipelinePage({
       <section className="section">
         <div className="row">
           <h2>7 · Final Render</h2>
-          <button
-            className="btn"
-            disabled={busy === "render" || scenes.length === 0}
-            onClick={() =>
-              guard("render", async () => setRender(await api.renderFinal(id)))
-            }
-          >
-            Render MP4
-          </button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <select value={preset} onChange={(e) => setPreset(e.target.value)}>
+              <option value="">Aspect-ratio default</option>
+              {presets.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} ({p.width}×{p.height})
+                </option>
+              ))}
+            </select>
+            <button
+              className="btn"
+              disabled={busy === "render" || scenes.length === 0}
+              onClick={() =>
+                guard("render", async () =>
+                  setRender(await api.renderFinal(id, preset || undefined))
+                )
+              }
+            >
+              Render MP4
+            </button>
+          </div>
         </div>
         {render && (
           <p className="muted">

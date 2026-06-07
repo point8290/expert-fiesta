@@ -168,4 +168,47 @@ describe("api client", () => {
     const [url] = fetchMock.mock.calls[0];
     expect(url).toMatch(/\/auth\/register$/);
   });
+
+  it("lists project templates", async () => {
+    const fetchMock = mockFetch([{ id: "cinematic_pop_rock", name: "X" }]);
+    const templates = await api.listTemplates();
+    expect(templates[0].id).toBe("cinematic_pop_rock");
+    const [url] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/templates$/);
+  });
+
+  it("creates a project from a template", async () => {
+    const fetchMock = mockFetch({ id: "p1" });
+    await api.createFromTemplate("cinematic_pop_rock", {
+      title: "T",
+      idea: "i",
+    });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/projects\/from-template\/cinematic_pop_rock$/);
+    expect(init?.method).toBe("POST");
+    expect(JSON.parse(init?.body as string).title).toBe("T");
+  });
+
+  it("lists export presets", async () => {
+    const fetchMock = mockFetch([{ id: "youtube_1080p", width: 1920 }]);
+    await api.listExportPresets();
+    const [url] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/export-presets$/);
+  });
+
+  it("generates a song from the music prompt", async () => {
+    const fetchMock = mockFetch({ source: "generated" });
+    const audio = await api.generateSong("p1");
+    expect(audio.source).toBe("generated");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/projects\/p1\/audio\/generate$/);
+    expect(init?.method).toBe("POST");
+  });
+
+  it("renders with an export preset", async () => {
+    const fetchMock = mockFetch({ status: "completed", outputPath: "x.mp4" });
+    await api.renderFinal("p1", "tiktok_vertical");
+    const [url] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/projects\/p1\/render\?preset=tiktok_vertical$/);
+  });
 });
