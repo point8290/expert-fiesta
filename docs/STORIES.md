@@ -163,7 +163,7 @@ clips, and final render.*
 - AC1: Face-embedding similarity score per character across scenes.
 - AC2: Optional per-character LoRA path.
 
-### P4-S5 — Transitions · `todo`
+### P4-S5 — Transitions · `done`
 - AC1: Render supports crossfades in addition to hard cuts.
 
 ### P4-S6 — Beat-synced cuts · `todo`

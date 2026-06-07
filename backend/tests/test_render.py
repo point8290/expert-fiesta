@@ -40,7 +40,7 @@ class FakeRenderer:
     def __init__(self):
         self.calls = []
 
-    def render(self, clips, audio_path, output_path, *, width, height, fps):
+    def render(self, clips, audio_path, output_path, *, width, height, fps, **_):
         self.calls.append(
             {"clips": list(clips), "audio": audio_path, "output": output_path}
         )

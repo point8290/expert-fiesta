@@ -72,7 +72,7 @@ class FakeRenderer:
     def __init__(self):
         self.calls = []
 
-    def render(self, clips, audio_path, output_path, *, width, height, fps):
+    def render(self, clips, audio_path, output_path, *, width, height, fps, **_):
         self.calls.append({"clips": list(clips)})
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         Path(output_path).write_bytes(b"FINAL")
