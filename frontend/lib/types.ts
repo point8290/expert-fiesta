@@ -10,6 +10,9 @@ export interface Project {
   targetDuration: number;
   aspectRatio: string;
   status: string;
+  videoBackend: string;
+  transition: string;
+  transitionDuration: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -60,8 +63,10 @@ export interface Scene {
   negativePrompt: string;
   keyframePath: string | null;
   keyframeStatus: string;
+  keyframePromptVersion: number | null;
   clipPath: string | null;
   clipStatus: string;
+  clipPromptVersion: number | null;
 }
 
 export interface RenderResult {
@@ -82,6 +87,17 @@ export interface Character {
   identityAnchors: string[];
   refImagePath: string | null;
   refStatus: string;
+  loraPath: string | null;
+}
+
+export interface ConsistencyScore {
+  sceneId: string;
+  characterId: string;
+  score: number;
+}
+
+export interface BeatCuts {
+  cuts: number[];
 }
 
 export interface Job {

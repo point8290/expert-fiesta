@@ -46,6 +46,11 @@ The pipeline screen now exposes the full Phase 1–3 backend:
   upload **clip**, mark final (Phase 3).
 - **Jobs** — live status / progress / queue position / errors for generation
   jobs (Phase 2 job queue).
+- **Settings** — pick the video model (LTX / Wan 2.2 / HunyuanVideo) and the
+  transition (hard cut / crossfade) per project (Phase 4).
+- **Quality** — face-embedding character-consistency scores per keyframe and
+  beat-synced cut suggestions; plus an optional per-character LoRA path on each
+  `CharacterCard` (Phase 4).
 - **Render** — stitch approved clips into the final MP4 (Phase 1).
 
 Each control reads/writes its backend endpoint via the typed client in
