@@ -10,13 +10,20 @@ from fastapi import (
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from ..adapters.consistency import ConsistencyScorer
 from ..adapters.llm import LLMClient
 from ..comfyui.client import ImageGenerator
 from ..database import get_db
-from ..dependencies import get_image_generator, get_llm_client, get_storage
-from ..models import Character, Lyrics, Project
-from ..schemas import CharacterRead, CharacterUpdate
+from ..dependencies import (
+    get_consistency_scorer,
+    get_image_generator,
+    get_llm_client,
+    get_storage,
+)
+from ..models import Character, Lyrics, Project, Scene
+from ..schemas import CharacterRead, CharacterUpdate, ConsistencyScoreRead
 from ..services.characters import CharacterGenerationError, generate_characters
+from ..services.consistency import score_scenes
 from ..services.images import generate_character_reference
 from ..storage import Storage
 
@@ -74,6 +81,25 @@ def list_characters(project_id: str, db: Session = Depends(get_db)):
     _get_project_or_404(db, project_id)
     stmt = select(Character).where(Character.project_id == project_id)
     return list(db.scalars(stmt))
+
+
+@router.get(
+    "/projects/{project_id}/consistency",
+    response_model=list[ConsistencyScoreRead],
+)
+def consistency_scores(
+    project_id: str,
+    db: Session = Depends(get_db),
+    scorer: ConsistencyScorer = Depends(get_consistency_scorer),
+):
+    _get_project_or_404(db, project_id)
+    characters = list(
+        db.scalars(select(Character).where(Character.project_id == project_id))
+    )
+    scenes = list(
+        db.scalars(select(Scene).where(Scene.project_id == project_id))
+    )
+    return score_scenes(scenes, characters, scorer)
 
 
 @router.patch("/characters/{character_id}", response_model=CharacterRead)

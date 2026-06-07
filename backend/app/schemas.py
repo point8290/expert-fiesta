@@ -102,6 +102,7 @@ class CharacterUpdate(CamelModel):
     clothing: Optional[str] = None
     personality: Optional[str] = None
     identity_anchors: Optional[list[str]] = None
+    lora_path: Optional[str] = None
 
 
 class CharacterRead(CamelModel):
@@ -116,6 +117,13 @@ class CharacterRead(CamelModel):
     identity_anchors: list[str]
     ref_image_path: Optional[str] = None
     ref_status: str
+    lora_path: Optional[str] = None
+
+
+class ConsistencyScoreRead(CamelModel):
+    scene_id: str
+    character_id: str
+    score: float
 
 
 class SceneContent(CamelModel):

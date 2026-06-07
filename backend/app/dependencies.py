@@ -2,6 +2,7 @@
 import os
 
 from .adapters.audio_analysis import AudioAnalyzer, LibrosaAnalyzer
+from .adapters.consistency import ConsistencyScorer, FaceEmbeddingScorer
 from .adapters.llm import LLMClient, OllamaClient
 from .adapters.render import FFmpegRenderer, Renderer
 from .comfyui.client import ComfyUIClient, ImageGenerator
@@ -33,3 +34,7 @@ def get_image_generator() -> ImageGenerator:
 def get_video_registry() -> dict[str, VideoBackend]:
     """All available video backends, keyed by name; project selects one."""
     return build_registry()
+
+
+def get_consistency_scorer() -> ConsistencyScorer:
+    return FaceEmbeddingScorer()

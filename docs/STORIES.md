@@ -159,7 +159,7 @@ clips, and final render.*
 ### P4-S3 — Prompt versioning · `done`
 - AC1: Prompt edits are versioned; each asset records the prompt version used.
 
-### P4-S4 — Consistency scoring + LoRA · `todo`
+### P4-S4 — Consistency scoring + LoRA · `done`
 - AC1: Face-embedding similarity score per character across scenes.
 - AC2: Optional per-character LoRA path.
 

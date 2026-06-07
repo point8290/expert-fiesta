@@ -91,6 +91,12 @@ def keyframe_params(
     if reference_image:
         # P2-S5 AC2: IP-Adapter consumes the approved character reference image.
         params["REFERENCE_IMAGE"] = reference_image
+    # P4-S4 AC2: optional per-character LoRA.
+    lora = next(
+        (c.lora_path for c in characters if getattr(c, "lora_path", None)), None
+    )
+    if lora:
+        params["LORA_PATH"] = lora
     return params
 
 

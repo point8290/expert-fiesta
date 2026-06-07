@@ -120,6 +120,7 @@ class Character(Base):
     identity_anchors: Mapped[list] = mapped_column(JSON, default=list)
     ref_image_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     ref_status: Mapped[str] = mapped_column(String, default="pending")
+    lora_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
 
 class Job(Base):

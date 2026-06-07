@@ -71,5 +71,6 @@ module under `tests/` before its implementation lands under `app/`.
 | P4-S1 | Wan 2.2 backend | ✅ done |
 | P4-S2 | HunyuanVideo backend | ✅ done |
 | P4-S3 | Prompt versioning | ✅ done |
+| P4-S4 | Consistency scoring + LoRA | ✅ done |
 | P4-S5 | Transitions (crossfade) | ✅ done |
 | P4-S6 | Beat-synced cuts | ✅ done |
