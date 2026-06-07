@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from ..adapters.llm import LLMClient
 from ..comfyui.client import ImageGenerator
+from ..config import get_settings
 from ..database import get_db
 from ..dependencies import (
     get_current_user,
@@ -23,8 +24,9 @@ from ..dependencies import (
 from ..models import Character, Project, PromptVersion, Scene, User
 from ..ownership import require_scene
 from ..schemas import JobRead, PromptVersionRead, SceneRead, SceneUpdate
+from ..services.clips import BackendError, generate_clip_for_scene, resolve_backend
 from ..services.images import generate_scene_keyframe
-from ..services.jobs import execute_job
+from ..services.jobs import create_job, execute_job
 from ..services.prompt_versions import (
     PROMPT_FIELDS,
     latest_version_number,
@@ -194,31 +196,22 @@ def generate_clip(
             detail="Scene needs an approved keyframe before generating a clip",
         )
     project = db.get(Project, scene.project_id)
-    # P5-S4: a per-scene override (e.g. "cloud") takes precedence over the project's.
-    backend_name = scene.video_backend_override or project.video_backend
-    backend = registry.get(backend_name)
-    if backend is None:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown video backend: {backend_name}",
-        )
+    try:
+        backend = resolve_backend(registry, project, scene)
+    except BackendError as exc:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
-    def task(progress):
-        progress(0.1)
-        output = storage.project_dir(scene.project_id, "scenes", scene.id) / "clip.mp4"
-        backend.generate(
-            scene.keyframe_path,
-            scene.video_prompt,
-            scene.negative_prompt,
-            str(output),
-        )
-        scene.clip_path = str(output)
-        scene.clip_status = "generated"
-        scene.clip_prompt_version = latest_version_number(db, scene.id)
-        db.commit()
-        return str(output)
+    # PR0-5: enqueue for the worker in async mode; otherwise run inline.
+    if get_settings().async_jobs:
+        return create_job(db, "clip", scene.project_id, scene_id=scene.id)
 
-    return execute_job(db, "clip", scene.project_id, task, scene_id=scene.id)
+    return execute_job(
+        db,
+        "clip",
+        scene.project_id,
+        lambda progress: generate_clip_for_scene(db, scene, backend, storage),
+        scene_id=scene.id,
+    )
 
 
 @router.post("/{scene_id}/clip/approve", response_model=SceneRead)

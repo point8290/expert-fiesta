@@ -32,7 +32,7 @@ Status: `todo` · `in-progress` · `done`
 - AC2: app startup no longer calls `create_all`; a documented `alembic upgrade head` step exists.
 - AC3: `Project.owner_id` tightened to `NOT NULL` via migration.
 
-### PR0-5 — Background job worker · `todo`
+### PR0-5 — Background job worker · `done`
 *Generation runs off the request thread; GPU work serialized.*
 - AC1: `execute_job` enqueues to a worker (RQ/Redis or a DB-backed worker) and returns immediately (`queued`).
 - AC2: a single worker processes jobs FIFO (serializes GPU); status/progress update live.
@@ -115,5 +115,5 @@ Status: `todo` · `in-progress` · `done`
 ---
 
 ## Suggested order (first deployable slice)
-PR0-1 ✅ → PR0-2 ✅ → PR0-3 ✅ → PR0-4 ✅ → PR0-5 → PR0-6 → PR0-7 → PR0-8 → PR0-9,
+PR0-1 ✅ → PR0-2 ✅ → PR0-3 ✅ → PR0-4 ✅ → PR0-5 ✅ → PR0-6 → PR0-7 → PR0-8 → PR0-9,
 then P1, then P2.

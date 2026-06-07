@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # Web
     cors_origins: str = "http://localhost:3000"
 
+    # Jobs: when true, generation endpoints enqueue and a separate worker runs
+    # them; when false (default), they run inline in the request.
+    async_jobs: bool = False
+
     # Model servers / external services
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "llama3.1"
