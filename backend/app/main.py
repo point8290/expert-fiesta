@@ -1,8 +1,10 @@
 """FastAPI application entrypoint for the Local Music Video Studio backend."""
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .database import Base, engine
 from .routers import (
@@ -36,6 +38,21 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Local Music Video Studio", lifespan=lifespan)
+
+# Allow the browser frontend to call the API cross-origin. Origins are
+# configurable (comma-separated CORS_ORIGINS); defaults to the local dev UI.
+_cors_origins = [
+    origin.strip()
+    for origin in os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health", tags=["meta"])
