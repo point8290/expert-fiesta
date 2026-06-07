@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError, api } from "./api";
+import { clearToken, setToken } from "./auth";
 
 function mockFetch(body: unknown, ok = true, status = 200) {
   const fn = vi.fn().mockResolvedValue({
@@ -15,6 +16,7 @@ function mockFetch(body: unknown, ok = true, status = 200) {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  clearToken();
 });
 
 describe("api client", () => {
@@ -132,5 +134,38 @@ describe("api client", () => {
     expect(result.cuts).toHaveLength(3);
     const [url] = fetchMock.mock.calls[0];
     expect(url).toMatch(/\/projects\/p1\/beat-cuts\?segments=4$/);
+  });
+
+  it("attaches the auth token as a Bearer header when present", async () => {
+    setToken("jwt-123");
+    const fetchMock = mockFetch([]);
+    await api.listProjects();
+    const [, init] = fetchMock.mock.calls[0];
+    const headers = init?.headers as Record<string, string>;
+    expect(headers["Authorization"]).toBe("Bearer jwt-123");
+  });
+
+  it("sends no Authorization header when logged out", async () => {
+    const fetchMock = mockFetch([]);
+    await api.listProjects();
+    const [, init] = fetchMock.mock.calls[0];
+    const headers = (init?.headers ?? {}) as Record<string, string>;
+    expect(headers["Authorization"]).toBeUndefined();
+  });
+
+  it("logs in and returns a token", async () => {
+    const fetchMock = mockFetch({ accessToken: "t", tokenType: "bearer" });
+    const token = await api.login("a@x.com", "secret123");
+    expect(token.accessToken).toBe("t");
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/auth\/login$/);
+    expect(JSON.parse(init?.body as string).email).toBe("a@x.com");
+  });
+
+  it("registers a new account", async () => {
+    const fetchMock = mockFetch({ accessToken: "t", tokenType: "bearer" });
+    await api.register("a@x.com", "secret123");
+    const [url] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/auth\/register$/);
   });
 });

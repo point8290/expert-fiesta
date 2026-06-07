@@ -1,6 +1,8 @@
 // Typed client for the Local Music Video Studio backend.
+import { getToken } from "./auth";
 import type {
   Audio,
+  AuthToken,
   BeatCuts,
   Character,
   ConsistencyScore,
@@ -10,6 +12,7 @@ import type {
   ProjectCreate,
   RenderResult,
   Scene,
+  User,
 } from "./types";
 
 const BASE_URL =
@@ -24,8 +27,13 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, init);
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers: Record<string, string> = {
+    ...(init.headers as Record<string, string> | undefined),
+  };
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`${BASE_URL}${path}`, { ...init, headers });
   if (!res.ok) {
     let detail = res.statusText;
     try {
@@ -49,6 +57,13 @@ function jsonInit(method: string, body?: unknown): RequestInit {
 }
 
 export const api = {
+  // Auth
+  register: (email: string, password: string) =>
+    request<AuthToken>("/auth/register", jsonInit("POST", { email, password })),
+  login: (email: string, password: string) =>
+    request<AuthToken>("/auth/login", jsonInit("POST", { email, password })),
+  me: () => request<User>("/auth/me"),
+
   // Projects
   listProjects: () => request<Project[]>("/projects"),
   createProject: (data: ProjectCreate) =>

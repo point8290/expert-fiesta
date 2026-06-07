@@ -32,9 +32,14 @@ npm run test        # vitest
 
 | Route | Screen |
 |-------|--------|
-| `/` | Dashboard — lists projects |
+| `/login` | Log in / create account (stores the JWT, attaches it to every request) |
+| `/` | Dashboard — lists the signed-in user's projects |
 | `/projects/new` | Project creation form |
-| `/projects/[id]` | Pipeline: lyrics → audio → characters → storyboard → jobs → render |
+| `/projects/[id]` | Pipeline: lyrics → audio → characters → storyboard → jobs → quality → render |
+
+Auth (P5-S2): the token lives in `localStorage` (`lib/auth.ts`); `lib/api.ts`
+adds it as a `Bearer` header; `RequireAuth` redirects signed-out visitors to
+`/login`; `AuthControls` in the header handles login/logout.
 
 The pipeline screen now exposes the full Phase 1–3 backend:
 
