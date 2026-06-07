@@ -1,4 +1,4 @@
-"""P1-S6 — Manage individual scenes."""
+"""P1-S6 — Manage individual scenes (owner-scoped, P5-S2)."""
 from fastapi import (
     APIRouter,
     Depends,
@@ -7,20 +7,21 @@ from fastapi import (
     UploadFile,
     status,
 )
-from sqlalchemy.orm import Session
-
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from ..adapters.llm import LLMClient
 from ..comfyui.client import ImageGenerator
 from ..database import get_db
 from ..dependencies import (
+    get_current_user,
     get_image_generator,
     get_llm_client,
     get_storage,
     get_video_registry,
 )
-from ..models import Character, Project, PromptVersion, Scene
+from ..models import Character, Project, PromptVersion, Scene, User
+from ..ownership import require_scene
 from ..schemas import JobRead, PromptVersionRead, SceneRead, SceneUpdate
 from ..services.images import generate_scene_keyframe
 from ..services.jobs import execute_job
@@ -54,23 +55,26 @@ def _image_suffix(filename: str | None) -> str:
     return ".png"
 
 
-def _get_scene_or_404(db: Session, scene_id: str) -> Scene:
-    scene = db.get(Scene, scene_id)
-    if scene is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Scene not found")
-    return scene
+def owned_scene(
+    scene_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> Scene:
+    """Resolve a scene the current user owns (404 otherwise)."""
+    return require_scene(db, scene_id, current_user)
 
 
 @router.get("/{scene_id}", response_model=SceneRead)
-def get_scene(scene_id: str, db: Session = Depends(get_db)):
-    return _get_scene_or_404(db, scene_id)
+def get_scene(scene: Scene = Depends(owned_scene)):
+    return scene
 
 
 @router.patch("/{scene_id}", response_model=SceneRead)
 def update_scene(
-    scene_id: str, payload: SceneUpdate, db: Session = Depends(get_db)
+    payload: SceneUpdate,
+    scene: Scene = Depends(owned_scene),
+    db: Session = Depends(get_db),
 ):
-    scene = _get_scene_or_404(db, scene_id)
     changes = payload.model_dump(exclude_unset=True)
     prompt_changed = any(
         field in changes and changes[field] != getattr(scene, field)
@@ -86,11 +90,12 @@ def update_scene(
 
 
 @router.get("/{scene_id}/prompt-versions", response_model=list[PromptVersionRead])
-def list_prompt_versions(scene_id: str, db: Session = Depends(get_db)):
-    _get_scene_or_404(db, scene_id)
+def list_prompt_versions(
+    scene: Scene = Depends(owned_scene), db: Session = Depends(get_db)
+):
     stmt = (
         select(PromptVersion)
-        .where(PromptVersion.scene_id == scene_id)
+        .where(PromptVersion.scene_id == scene.id)
         .order_by(PromptVersion.version)
     )
     return list(db.scalars(stmt))
@@ -98,11 +103,10 @@ def list_prompt_versions(scene_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{scene_id}/regenerate-prompt", response_model=SceneRead)
 def regenerate_scene_prompt(
-    scene_id: str,
+    scene: Scene = Depends(owned_scene),
     db: Session = Depends(get_db),
     llm: LLMClient = Depends(get_llm_client),
 ):
-    scene = _get_scene_or_404(db, scene_id)
     project = db.get(Project, scene.project_id)
     try:
         content = regenerate_scene_content(project, scene, llm)
@@ -121,19 +125,18 @@ def regenerate_scene_prompt(
     "/{scene_id}/clip", response_model=SceneRead, status_code=status.HTTP_201_CREATED
 )
 def upload_clip(
-    scene_id: str,
     file: UploadFile = File(...),
+    scene: Scene = Depends(owned_scene),
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
 ):
-    scene = _get_scene_or_404(db, scene_id)
     if file.content_type not in ALLOWED_VIDEO_TYPES:
         raise HTTPException(
             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"Unsupported video type: {file.content_type}",
         )
     path = storage.save_upload(
-        scene.project_id, f"scenes/{scene_id}", file.filename, file.file
+        scene.project_id, f"scenes/{scene.id}", file.filename, file.file
     )
     scene.clip_path = str(path)
     scene.clip_status = "approved"
@@ -143,8 +146,7 @@ def upload_clip(
 
 
 @router.post("/{scene_id}/finalize", response_model=SceneRead)
-def finalize_scene(scene_id: str, db: Session = Depends(get_db)):
-    scene = _get_scene_or_404(db, scene_id)
+def finalize_scene(scene: Scene = Depends(owned_scene), db: Session = Depends(get_db)):
     scene.clip_status = "final"
     db.commit()
     db.refresh(scene)
@@ -153,12 +155,11 @@ def finalize_scene(scene_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{scene_id}/keyframe", response_model=SceneRead)
 def generate_keyframe(
-    scene_id: str,
+    scene: Scene = Depends(owned_scene),
     db: Session = Depends(get_db),
     generator: ImageGenerator = Depends(get_image_generator),
     storage: Storage = Depends(get_storage),
 ):
-    scene = _get_scene_or_404(db, scene_id)
     project = db.get(Project, scene.project_id)
     characters = list(
         db.scalars(select(Character).where(Character.project_id == scene.project_id))
@@ -166,15 +167,14 @@ def generate_keyframe(
     path = generate_scene_keyframe(project, scene, characters, generator, storage)
     scene.keyframe_path = path
     scene.keyframe_status = "generated"
-    scene.keyframe_prompt_version = latest_version_number(db, scene_id)
+    scene.keyframe_prompt_version = latest_version_number(db, scene.id)
     db.commit()
     db.refresh(scene)
     return scene
 
 
 @router.post("/{scene_id}/keyframe/approve", response_model=SceneRead)
-def approve_keyframe(scene_id: str, db: Session = Depends(get_db)):
-    scene = _get_scene_or_404(db, scene_id)
+def approve_keyframe(scene: Scene = Depends(owned_scene), db: Session = Depends(get_db)):
     scene.keyframe_status = "approved"
     db.commit()
     db.refresh(scene)
@@ -183,12 +183,11 @@ def approve_keyframe(scene_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{scene_id}/clip/generate", response_model=JobRead)
 def generate_clip(
-    scene_id: str,
+    scene: Scene = Depends(owned_scene),
     db: Session = Depends(get_db),
     registry: dict[str, VideoBackend] = Depends(get_video_registry),
     storage: Storage = Depends(get_storage),
 ):
-    scene = _get_scene_or_404(db, scene_id)
     if scene.keyframe_status != "approved" or not scene.keyframe_path:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
@@ -206,7 +205,7 @@ def generate_clip(
 
     def task(progress):
         progress(0.1)
-        output = storage.project_dir(scene.project_id, "scenes", scene_id) / "clip.mp4"
+        output = storage.project_dir(scene.project_id, "scenes", scene.id) / "clip.mp4"
         backend.generate(
             scene.keyframe_path,
             scene.video_prompt,
@@ -215,16 +214,15 @@ def generate_clip(
         )
         scene.clip_path = str(output)
         scene.clip_status = "generated"
-        scene.clip_prompt_version = latest_version_number(db, scene_id)
+        scene.clip_prompt_version = latest_version_number(db, scene.id)
         db.commit()
         return str(output)
 
-    return execute_job(db, "clip", scene.project_id, task, scene_id=scene_id)
+    return execute_job(db, "clip", scene.project_id, task, scene_id=scene.id)
 
 
 @router.post("/{scene_id}/clip/approve", response_model=SceneRead)
-def approve_clip(scene_id: str, db: Session = Depends(get_db)):
-    scene = _get_scene_or_404(db, scene_id)
+def approve_clip(scene: Scene = Depends(owned_scene), db: Session = Depends(get_db)):
     scene.clip_status = "approved"
     db.commit()
     db.refresh(scene)
@@ -233,12 +231,11 @@ def approve_clip(scene_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{scene_id}/keyframe/upload", response_model=SceneRead)
 def upload_keyframe(
-    scene_id: str,
     file: UploadFile = File(...),
+    scene: Scene = Depends(owned_scene),
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
 ):
-    scene = _get_scene_or_404(db, scene_id)
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -246,7 +243,7 @@ def upload_keyframe(
         )
     path = storage.save_upload(
         scene.project_id,
-        f"scenes/{scene_id}",
+        f"scenes/{scene.id}",
         f"keyframe{_image_suffix(file.filename)}",
         file.file,
     )

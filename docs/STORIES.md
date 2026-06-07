@@ -176,7 +176,7 @@ clips, and final render.*
 ### P5-S1 — Templates + export presets · `done`
 - AC1: Project templates; export presets per resolution/format/platform.
 
-### P5-S2 — Multi-user + auth · `todo`
+### P5-S2 — Multi-user + auth · `done`
 - AC1: Users authenticate; projects are scoped per user.
 
 ### P5-S3 — Project export/import · `done`

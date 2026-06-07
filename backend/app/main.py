@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from .database import Base, engine
 from .routers import (
     audio,
+    auth,
     catalog,
     characters,
     jobs,
@@ -42,6 +43,7 @@ def health():
     return {"status": "ok"}
 
 
+app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(lyrics.router)
 app.include_router(audio.router)

@@ -80,6 +80,7 @@ module under `tests/` before its implementation lands under `app/`.
 | Story | Description | Status |
 |-------|-------------|--------|
 | P5-S1 | Templates + export presets | ✅ done |
+| P5-S2 | Multi-user + auth | ✅ done |
 | P5-S3 | Project export/import | ✅ done |
 | P5-S4 | Cloud fallback | ✅ done |
 | P5-S5 | Usage tracking | ✅ done |

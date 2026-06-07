@@ -5,8 +5,14 @@ from sqlalchemy.orm import Session
 from ..adapters.audio_analysis import AudioAnalyzer
 from ..adapters.song import SongGenerator
 from ..database import get_db
-from ..dependencies import get_audio_analyzer, get_song_generator, get_storage
-from ..models import Audio, Lyrics, Project
+from ..dependencies import (
+    get_audio_analyzer,
+    get_current_user,
+    get_song_generator,
+    get_storage,
+)
+from ..models import Audio, Lyrics, User
+from ..ownership import require_project
 from ..schemas import AudioRead
 from ..storage import Storage
 
@@ -22,21 +28,15 @@ ALLOWED_AUDIO_TYPES = {
 }
 
 
-def _get_project_or_404(db: Session, project_id: str) -> Project:
-    project = db.get(Project, project_id)
-    if project is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Project not found")
-    return project
-
-
 @router.post("", response_model=AudioRead, status_code=status.HTTP_201_CREATED)
 def upload_audio(
     project_id: str,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
+    current_user: User = Depends(get_current_user),
 ):
-    _get_project_or_404(db, project_id)
+    require_project(db, project_id, current_user)
     if file.content_type not in ALLOWED_AUDIO_TYPES:
         raise HTTPException(
             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -58,8 +58,12 @@ def upload_audio(
 
 
 @router.get("", response_model=AudioRead)
-def get_audio(project_id: str, db: Session = Depends(get_db)):
-    _get_project_or_404(db, project_id)
+def get_audio(
+    project_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    require_project(db, project_id, current_user)
     row = db.get(Audio, project_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Audio not found")
@@ -72,8 +76,9 @@ def generate_song(
     db: Session = Depends(get_db),
     generator: SongGenerator = Depends(get_song_generator),
     storage: Storage = Depends(get_storage),
+    current_user: User = Depends(get_current_user),
 ):
-    project = _get_project_or_404(db, project_id)
+    project = require_project(db, project_id, current_user)
     lyrics = db.get(Lyrics, project_id)
     if lyrics is None:
         raise HTTPException(
@@ -100,8 +105,9 @@ def analyze_audio(
     project_id: str,
     db: Session = Depends(get_db),
     analyzer: AudioAnalyzer = Depends(get_audio_analyzer),
+    current_user: User = Depends(get_current_user),
 ):
-    _get_project_or_404(db, project_id)
+    require_project(db, project_id, current_user)
     row = db.get(Audio, project_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Audio not found")

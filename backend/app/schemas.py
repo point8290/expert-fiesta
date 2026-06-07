@@ -16,6 +16,22 @@ class CamelModel(BaseModel):
     )
 
 
+class UserCreate(CamelModel):
+    email: str = Field(min_length=3)
+    password: str = Field(min_length=6)
+
+
+class UserRead(CamelModel):
+    id: str
+    email: str
+    created_at: datetime
+
+
+class Token(CamelModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
 class ProjectTemplateRead(CamelModel):
     id: str
     name: str
