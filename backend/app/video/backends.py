@@ -5,6 +5,7 @@ Every backend implements the same ``VideoBackend`` contract:
 (LTX-Video, Wan 2.2, HunyuanVideo) share the same parameter shape and only differ
 by their committed ComfyUI workflow template, so they subclass ``ComfyVideoBackend``.
 """
+import os
 import random
 from typing import Protocol
 
@@ -94,3 +95,48 @@ class HunyuanBackend(ComfyVideoBackend):
     """HunyuanVideo image-to-video."""
 
     workflow = "hunyuan_video"
+
+
+class CloudVideoBackend:
+    """P5-S4 — opt-in cloud fallback for difficult scenes.
+
+    Implements the same ``VideoBackend`` contract but calls a hosted API instead
+    of local ComfyUI. The HTTP call is a runtime detail (not unit-tested).
+    """
+
+    workflow = "cloud"
+
+    def __init__(self, base_url: str | None = None, api_key: str | None = None):
+        self.base_url = base_url or os.environ.get("CLOUD_VIDEO_URL", "")
+        self.api_key = api_key or os.environ.get("CLOUD_VIDEO_API_KEY", "")
+
+    def generate(
+        self,
+        keyframe_path: str,
+        video_prompt: str,
+        negative_prompt: str,
+        output_path: str,
+        *,
+        seed: int | None = None,
+        frames: int = 120,
+    ) -> str:
+        import httpx
+
+        with open(keyframe_path, "rb") as image:
+            resp = httpx.post(
+                f"{self.base_url}/image-to-video",
+                headers={"Authorization": f"Bearer {self.api_key}"},
+                data={
+                    "prompt": video_prompt,
+                    "negative_prompt": negative_prompt or DEFAULT_NEGATIVE,
+                    "frames": frames,
+                },
+                files={"image": image},
+                timeout=600,
+            )
+        resp.raise_for_status()
+        from pathlib import Path
+
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(output_path).write_bytes(resp.content)
+        return output_path

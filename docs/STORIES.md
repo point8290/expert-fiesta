@@ -182,7 +182,7 @@ clips, and final render.*
 ### P5-S3 — Project export/import · `done`
 - AC1: A project (metadata + assets) can be exported and re-imported.
 
-### P5-S4 — Cloud fallback · `todo`
+### P5-S4 — Cloud fallback · `done`
 - AC1: Opt-in cloud generation for difficult scenes behind the same backend interface.
 
 ### P5-S5 — Usage tracking + SaaS · `todo`

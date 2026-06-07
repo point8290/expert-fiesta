@@ -181,6 +181,7 @@ class SceneUpdate(CamelModel):
     keyframe_prompt: Optional[str] = None
     video_prompt: Optional[str] = None
     negative_prompt: Optional[str] = None
+    video_backend_override: Optional[str] = None
 
 
 class SceneRead(CamelModel):
@@ -203,6 +204,7 @@ class SceneRead(CamelModel):
     clip_path: Optional[str] = None
     clip_status: str
     clip_prompt_version: Optional[int] = None
+    video_backend_override: Optional[str] = None
 
 
 class JobRead(CamelModel):

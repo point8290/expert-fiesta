@@ -33,7 +33,7 @@ def test_build_video_backend_returns_correct_class():
 
 
 def test_registry_lists_all_backends():
-    assert set(VIDEO_BACKENDS) == {"ltx", "wan", "hunyuan"}
+    assert set(VIDEO_BACKENDS) == {"ltx", "wan", "hunyuan", "cloud"}
 
 
 def test_build_unknown_backend_raises():

@@ -84,6 +84,7 @@ class Scene(Base):
     clip_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     clip_status: Mapped[str] = mapped_column(String, default="pending")
     clip_prompt_version: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    video_backend_override: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
 
 class PromptVersion(Base):
