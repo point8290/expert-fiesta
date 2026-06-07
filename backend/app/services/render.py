@@ -29,6 +29,7 @@ def render_project(
     scenes: list[Scene],
     renderer: Renderer,
     storage: Storage,
+    preset=None,
 ) -> str:
     if audio is None:
         raise RenderError("No audio uploaded for this project")
@@ -44,7 +45,14 @@ def render_project(
     if missing:
         raise RenderError(f"Scenes without an approved clip: {missing}")
 
-    width, height = ASPECT_RESOLUTIONS.get(project.aspect_ratio, (1920, 1080))
+    # An export preset (P5-S1) overrides resolution/fps; otherwise use the
+    # project's aspect ratio at the default frame rate.
+    if preset is not None:
+        width, height, fps = preset.width, preset.height, preset.fps
+    else:
+        width, height = ASPECT_RESOLUTIONS.get(project.aspect_ratio, (1920, 1080))
+        fps = DEFAULT_FPS
+
     output_path = storage.project_dir(project.id, "renders") / "final.mp4"
     renderer.render(
         [s.clip_path for s in ordered],
@@ -52,7 +60,7 @@ def render_project(
         str(output_path),
         width=width,
         height=height,
-        fps=DEFAULT_FPS,
+        fps=fps,
         transition=getattr(project, "transition", None) or "cut",
         transition_duration=getattr(project, "transition_duration", None) or 0.5,
     )

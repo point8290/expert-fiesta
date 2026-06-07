@@ -195,11 +195,13 @@ def generate_clip(
             detail="Scene needs an approved keyframe before generating a clip",
         )
     project = db.get(Project, scene.project_id)
-    backend = registry.get(project.video_backend)
+    # P5-S4: a per-scene override (e.g. "cloud") takes precedence over the project's.
+    backend_name = scene.video_backend_override or project.video_backend
+    backend = registry.get(backend_name)
     if backend is None:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown video backend: {project.video_backend}",
+            detail=f"Unknown video backend: {backend_name}",
         )
 
     def task(progress):

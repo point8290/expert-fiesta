@@ -16,6 +16,33 @@ class CamelModel(BaseModel):
     )
 
 
+class ProjectTemplateRead(CamelModel):
+    id: str
+    name: str
+    genre: str
+    mood: str
+    visual_style: str
+    aspect_ratio: str
+    target_duration: int
+    video_backend: str
+    transition: str
+
+
+class ProjectFromTemplate(CamelModel):
+    title: str = Field(min_length=1)
+    idea: str = Field(min_length=1)
+
+
+class ExportPresetRead(CamelModel):
+    id: str
+    name: str
+    platform: str
+    width: int
+    height: int
+    fps: int
+    format: str
+
+
 class ProjectCreate(CamelModel):
     title: str = Field(min_length=1)
     idea: str = Field(min_length=1)
@@ -154,6 +181,7 @@ class SceneUpdate(CamelModel):
     keyframe_prompt: Optional[str] = None
     video_prompt: Optional[str] = None
     negative_prompt: Optional[str] = None
+    video_backend_override: Optional[str] = None
 
 
 class SceneRead(CamelModel):
@@ -176,6 +204,7 @@ class SceneRead(CamelModel):
     clip_path: Optional[str] = None
     clip_status: str
     clip_prompt_version: Optional[int] = None
+    video_backend_override: Optional[str] = None
 
 
 class JobRead(CamelModel):
@@ -197,6 +226,13 @@ class RenderRead(CamelModel):
     output_path: str
 
 
+class UsageSummary(CamelModel):
+    total_jobs: int
+    succeeded: int
+    failed: int
+    by_type: dict[str, int]
+
+
 class LyricsData(CamelModel):
     """The structured lyrics payload produced by the LLM and returned by the API."""
 
@@ -205,3 +241,12 @@ class LyricsData(CamelModel):
     body: str = Field(min_length=1)
     music_prompt: str = Field(min_length=1)
     emotional_arc: str = Field(min_length=1)
+
+
+class ProjectExport(CamelModel):
+    """A portable snapshot of a project's metadata (assets not bundled)."""
+
+    project: ProjectRead
+    lyrics: Optional[LyricsData] = None
+    characters: list[CharacterRead] = []
+    scenes: list[SceneRead] = []

@@ -5,9 +5,23 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import Job, Project
-from ..schemas import JobRead
+from ..schemas import JobRead, UsageSummary
+from ..services.usage import summarize
 
 router = APIRouter(tags=["jobs"])
+
+
+@router.get("/usage", response_model=UsageSummary)
+def global_usage(db: Session = Depends(get_db)):
+    return summarize(list(db.scalars(select(Job))))
+
+
+@router.get("/projects/{project_id}/usage", response_model=UsageSummary)
+def project_usage(project_id: str, db: Session = Depends(get_db)):
+    if db.get(Project, project_id) is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Project not found")
+    jobs = list(db.scalars(select(Job).where(Job.project_id == project_id)))
+    return summarize(jobs)
 
 
 @router.get("/jobs/{job_id}", response_model=JobRead)

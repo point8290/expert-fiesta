@@ -173,21 +173,21 @@ clips, and final render.*
 
 ## Phase 5 — Productization
 
-### P5-S1 — Templates + export presets · `todo`
+### P5-S1 — Templates + export presets · `done`
 - AC1: Project templates; export presets per resolution/format/platform.
 
 ### P5-S2 — Multi-user + auth · `todo`
 - AC1: Users authenticate; projects are scoped per user.
 
-### P5-S3 — Project export/import · `todo`
+### P5-S3 — Project export/import · `done`
 - AC1: A project (metadata + assets) can be exported and re-imported.
 
-### P5-S4 — Cloud fallback · `todo`
+### P5-S4 — Cloud fallback · `done`
 - AC1: Opt-in cloud generation for difficult scenes behind the same backend interface.
 
-### P5-S5 — Usage tracking + SaaS · `todo`
+### P5-S5 — Usage tracking + SaaS · `done`
 - AC1: Usage metering; optional billing layer.
 
-### P5-S6 — Local song generation · `todo`
+### P5-S6 — Local song generation · `done`
 - AC1: ACE-Step (or similar) generates audio locally, removing the upload step
   (`source="generated"`).

@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from .database import Base, engine
 from .routers import (
     audio,
+    catalog,
     characters,
     jobs,
     lyrics,
@@ -49,3 +50,4 @@ app.include_router(scenes.router)
 app.include_router(render.router)
 app.include_router(characters.router)
 app.include_router(jobs.router)
+app.include_router(catalog.router)

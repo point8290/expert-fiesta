@@ -5,7 +5,15 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import Project
-from ..schemas import ProjectCreate, ProjectRead, ProjectUpdate
+from ..schemas import (
+    ProjectCreate,
+    ProjectExport,
+    ProjectFromTemplate,
+    ProjectRead,
+    ProjectUpdate,
+)
+from ..services.export_import import export_project, import_project
+from ..services.templates import get_template
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -26,10 +34,55 @@ def create_project(payload: ProjectCreate, db: Session = Depends(get_db)):
     return project
 
 
+@router.post(
+    "/from-template/{template_id}",
+    response_model=ProjectRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_from_template(
+    template_id: str,
+    payload: ProjectFromTemplate,
+    db: Session = Depends(get_db),
+):
+    template = get_template(template_id)
+    if template is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Template not found")
+    project = Project(
+        title=payload.title,
+        idea=payload.idea,
+        genre=template.genre,
+        mood=template.mood,
+        visual_style=template.visual_style,
+        target_duration=template.target_duration,
+        aspect_ratio=template.aspect_ratio,
+        video_backend=template.video_backend,
+        transition=template.transition,
+    )
+    db.add(project)
+    db.commit()
+    db.refresh(project)
+    return project
+
+
+@router.post(
+    "/import", response_model=ProjectRead, status_code=status.HTTP_201_CREATED
+)
+def import_project_endpoint(
+    payload: ProjectExport, db: Session = Depends(get_db)
+):
+    return import_project(db, payload)
+
+
 @router.get("", response_model=list[ProjectRead])
 def list_projects(db: Session = Depends(get_db)):
     stmt = select(Project).order_by(Project.created_at.desc())
     return list(db.scalars(stmt))
+
+
+@router.get("/{project_id}/export", response_model=ProjectExport)
+def export_project_endpoint(project_id: str, db: Session = Depends(get_db)):
+    project = _get_or_404(db, project_id)
+    return export_project(db, project)
 
 
 @router.get("/{project_id}", response_model=ProjectRead)

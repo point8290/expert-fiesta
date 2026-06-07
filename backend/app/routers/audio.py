@@ -3,9 +3,10 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from ..adapters.audio_analysis import AudioAnalyzer
+from ..adapters.song import SongGenerator
 from ..database import get_db
-from ..dependencies import get_audio_analyzer, get_storage
-from ..models import Audio, Project
+from ..dependencies import get_audio_analyzer, get_song_generator, get_storage
+from ..models import Audio, Lyrics, Project
 from ..schemas import AudioRead
 from ..storage import Storage
 
@@ -62,6 +63,35 @@ def get_audio(project_id: str, db: Session = Depends(get_db)):
     row = db.get(Audio, project_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Audio not found")
+    return AudioRead.model_validate(row)
+
+
+@router.post("/generate", response_model=AudioRead, status_code=status.HTTP_201_CREATED)
+def generate_song(
+    project_id: str,
+    db: Session = Depends(get_db),
+    generator: SongGenerator = Depends(get_song_generator),
+    storage: Storage = Depends(get_storage),
+):
+    project = _get_project_or_404(db, project_id)
+    lyrics = db.get(Lyrics, project_id)
+    if lyrics is None:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail="Generate lyrics first — the music prompt drives song generation",
+        )
+    path = storage.project_dir(project_id, "audio") / "song.wav"
+    generator.generate(lyrics.music_prompt, str(path), project.target_duration)
+    row = db.merge(
+        Audio(
+            project_id=project_id,
+            filename="song.wav",
+            content_type="audio/wav",
+            path=str(path),
+            source="generated",
+        )
+    )
+    db.commit()
     return AudioRead.model_validate(row)
 
 
