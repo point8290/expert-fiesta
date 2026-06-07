@@ -156,7 +156,7 @@ clips, and final render.*
 ### P4-S2 — HunyuanVideo backend · `todo`
 - AC1: `HunyuanBackend` implements `VideoBackend`; selectable per project/scene.
 
-### P4-S3 — Prompt versioning · `todo`
+### P4-S3 — Prompt versioning · `done`
 - AC1: Prompt edits are versioned; each asset records the prompt version used.
 
 ### P4-S4 — Consistency scoring + LoRA · `todo`

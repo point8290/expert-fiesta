@@ -119,6 +119,16 @@ class SceneContent(CamelModel):
     negative_prompt: str
 
 
+class PromptVersionRead(CamelModel):
+    id: str
+    scene_id: str
+    version: int
+    keyframe_prompt: str
+    video_prompt: str
+    negative_prompt: str
+    created_at: datetime
+
+
 class SceneUpdate(CamelModel):
     visual_description: Optional[str] = None
     camera_instruction: Optional[str] = None
@@ -144,8 +154,10 @@ class SceneRead(CamelModel):
     negative_prompt: str
     keyframe_path: Optional[str] = None
     keyframe_status: str
+    keyframe_prompt_version: Optional[int] = None
     clip_path: Optional[str] = None
     clip_status: str
+    clip_prompt_version: Optional[int] = None
 
 
 class JobRead(CamelModel):

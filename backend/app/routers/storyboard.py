@@ -8,6 +8,7 @@ from ..database import get_db
 from ..dependencies import get_llm_client
 from ..models import Audio, Lyrics, Project, Scene
 from ..schemas import SceneRead
+from ..services.prompt_versions import record_version
 from ..services.storyboard import StoryboardGenerationError, generate_storyboard
 
 router = APIRouter(tags=["storyboard"])
@@ -42,6 +43,9 @@ def create_storyboard(
     # Regenerating replaces the existing storyboard.
     db.execute(delete(Scene).where(Scene.project_id == project_id))
     db.add_all(scenes)
+    db.flush()
+    for scene in scenes:
+        record_version(db, scene)  # initial v1 snapshot per scene
     db.commit()
     for scene in scenes:
         db.refresh(scene)
