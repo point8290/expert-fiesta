@@ -5,6 +5,7 @@ from .adapters.audio_analysis import AudioAnalyzer, LibrosaAnalyzer
 from .adapters.consistency import ConsistencyScorer, FaceEmbeddingScorer
 from .adapters.llm import LLMClient, OllamaClient
 from .adapters.render import FFmpegRenderer, Renderer
+from .adapters.song import AceStepGenerator, SongGenerator
 from .comfyui.client import ComfyUIClient, ImageGenerator
 from .storage import Storage
 from .video.backends import VideoBackend
@@ -38,3 +39,7 @@ def get_video_registry() -> dict[str, VideoBackend]:
 
 def get_consistency_scorer() -> ConsistencyScorer:
     return FaceEmbeddingScorer()
+
+
+def get_song_generator() -> SongGenerator:
+    return AceStepGenerator()

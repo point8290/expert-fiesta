@@ -81,3 +81,4 @@ module under `tests/` before its implementation lands under `app/`.
 |-------|-------------|--------|
 | P5-S1 | Templates + export presets | ✅ done |
 | P5-S3 | Project export/import | ✅ done |
+| P5-S6 | Local song generation | ✅ done |

@@ -188,6 +188,6 @@ clips, and final render.*
 ### P5-S5 — Usage tracking + SaaS · `todo`
 - AC1: Usage metering; optional billing layer.
 
-### P5-S6 — Local song generation · `todo`
+### P5-S6 — Local song generation · `done`
 - AC1: ACE-Step (or similar) generates audio locally, removing the upload step
   (`source="generated"`).
