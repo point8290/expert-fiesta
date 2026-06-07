@@ -5,11 +5,11 @@ Every backend implements the same ``VideoBackend`` contract:
 (LTX-Video, Wan 2.2, HunyuanVideo) share the same parameter shape and only differ
 by their committed ComfyUI workflow template, so they subclass ``ComfyVideoBackend``.
 """
-import os
 import random
 from typing import Protocol
 
 from ..comfyui.client import ComfyUIClient
+from ..config import get_settings
 
 DEFAULT_NEGATIVE = "flicker, jitter, deformed, watermark, text, low quality"
 
@@ -107,8 +107,8 @@ class CloudVideoBackend:
     workflow = "cloud"
 
     def __init__(self, base_url: str | None = None, api_key: str | None = None):
-        self.base_url = base_url or os.environ.get("CLOUD_VIDEO_URL", "")
-        self.api_key = api_key or os.environ.get("CLOUD_VIDEO_API_KEY", "")
+        self.base_url = base_url or get_settings().cloud_video_url
+        self.api_key = api_key or get_settings().cloud_video_api_key
 
     def generate(
         self,

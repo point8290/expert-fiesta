@@ -1,11 +1,11 @@
 """FastAPI application entrypoint for the Local Music Video Studio backend."""
 import logging
-import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .config import assert_production_ready, get_settings
 from .database import Base, engine
 from .routers import (
     audio,
@@ -23,6 +23,8 @@ from .routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Refuse to boot insecurely in production (e.g. default AUTH_SECRET).
+    assert_production_ready(get_settings())
     # For local-first single-user use; later phases can switch to migrations.
     Base.metadata.create_all(bind=engine)
     # P2-S1 AC3: validate committed ComfyUI workflows load on startup.
@@ -39,16 +41,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Local Music Video Studio", lifespan=lifespan)
 
-# Allow the browser frontend to call the API cross-origin. Origins are
-# configurable (comma-separated CORS_ORIGINS); defaults to the local dev UI.
-_cors_origins = [
-    origin.strip()
-    for origin in os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",")
-    if origin.strip()
-]
+# Allow the browser frontend to call the API cross-origin (configurable via
+# CORS_ORIGINS; defaults to the local dev UI).
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
+    allow_origins=get_settings().cors_origin_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

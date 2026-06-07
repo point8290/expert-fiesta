@@ -14,6 +14,8 @@ import re
 from pathlib import Path
 from typing import Any, Protocol
 
+from ..config import get_settings
+
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 _PLACEHOLDER = re.compile(r"\{\{(\w+)\}\}")
 
@@ -55,7 +57,7 @@ def _substitute(node: Any, params: dict) -> Any:
 
 class ComfyUIClient:
     def __init__(self, host: str | None = None, templates_dir: Path | None = None):
-        self.host = host or os.environ.get("COMFYUI_HOST", "http://localhost:8188")
+        self.host = host or get_settings().comfyui_host
         self.templates_dir = Path(templates_dir or TEMPLATES_DIR)
 
     def load_template(self, name: str) -> dict:

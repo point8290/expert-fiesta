@@ -106,7 +106,7 @@ characters/keyframes/clips/song all degrade gracefully to manual upload.
 ## Running the tests
 
 ```bash
-cd backend  && pytest                 # 142 tests, no GPU/ffmpeg/Ollama needed
+cd backend  && pytest                 # 147 tests, no GPU/ffmpeg/Ollama needed
 cd frontend && npm run typecheck && npm run test
 ```
 

@@ -1,9 +1,8 @@
 """Shared FastAPI dependencies. Tests override these via ``app.dependency_overrides``."""
-import os
-
 from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 
+from .config import get_settings
 from .adapters.audio_analysis import AudioAnalyzer, LibrosaAnalyzer
 from .adapters.consistency import ConsistencyScorer, FaceEmbeddingScorer
 from .adapters.llm import LLMClient, OllamaClient
@@ -44,7 +43,7 @@ def get_llm_client() -> LLMClient:
 
 
 def get_storage() -> Storage:
-    return Storage(os.environ.get("STORAGE_DIR", "projects"))
+    return Storage(get_settings().storage_dir)
 
 
 def get_audio_analyzer() -> AudioAnalyzer:

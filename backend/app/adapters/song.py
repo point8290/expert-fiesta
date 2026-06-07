@@ -4,8 +4,9 @@ The pipeline depends only on the ``SongGenerator`` protocol so tests inject a
 fake and the local music model stays a swappable runtime detail. This removes
 the manual audio-upload step from the workflow.
 """
-import os
 from typing import Protocol
+
+from ..config import get_settings
 
 
 class SongGenerator(Protocol):
@@ -17,7 +18,7 @@ class AceStepGenerator:
     """Local song generation via ACE-Step. Not exercised by unit tests."""
 
     def __init__(self, model: str | None = None):
-        self.model = model or os.environ.get("ACESTEP_MODEL", "ace-step-v1")
+        self.model = model or get_settings().acestep_model
 
     def generate(self, prompt: str, output_path: str, duration: int) -> str:
         from pathlib import Path

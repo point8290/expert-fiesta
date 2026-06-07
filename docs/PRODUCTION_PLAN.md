@@ -15,7 +15,7 @@ Status: `todo` · `in-progress` · `done`
 - AC1: configured origins get `Access-Control-Allow-Origin`; unknown origins don't.
 - AC2: origins come from `CORS_ORIGINS` (default `http://localhost:3000`).
 
-### PR0-2 — Centralized config + secret validation · `todo`
+### PR0-2 — Centralized config + secret validation · `done`
 *All config in one validated place; refuse to boot insecurely.*
 - AC1: a pydantic `Settings` object reads every env var (DB, auth, hosts, storage, CORS).
 - AC2: startup fails fast if `AUTH_SECRET` is unset/default while `ENV=production`.
@@ -115,5 +115,5 @@ Status: `todo` · `in-progress` · `done`
 ---
 
 ## Suggested order (first deployable slice)
-PR0-1 ✅ → PR0-2 → PR0-3 → PR0-4 → PR0-5 → PR0-6 → PR0-7 → PR0-8 → PR0-9,
+PR0-1 ✅ → PR0-2 ✅ → PR0-3 → PR0-4 → PR0-5 → PR0-6 → PR0-7 → PR0-8 → PR0-9,
 then P1, then P2.

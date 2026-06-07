@@ -1,8 +1,9 @@
 """LLM adapter. The pipeline talks to language models only through ``LLMClient``
 so tests can inject fakes and the backend (Ollama today) stays swappable.
 """
-import os
 from typing import Protocol
+
+from ..config import get_settings
 
 
 class LLMClient(Protocol):
@@ -15,8 +16,9 @@ class OllamaClient:
     """Talks to a local Ollama server. Not exercised by unit tests."""
 
     def __init__(self, model: str | None = None, host: str | None = None):
-        self.model = model or os.environ.get("OLLAMA_MODEL", "llama3.1")
-        self.host = host or os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+        settings = get_settings()
+        self.model = model or settings.ollama_model
+        self.host = host or settings.ollama_host
 
     def complete(self, system: str, prompt: str) -> str:
         import httpx

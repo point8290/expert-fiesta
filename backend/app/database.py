@@ -3,12 +3,12 @@
 Local-first: a single SQLite file is all one creator needs. Tests override
 ``get_db`` with an in-memory database (see ``tests/conftest.py``).
 """
-import os
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./localmv.db")
+from .config import get_settings
+
+DATABASE_URL = get_settings().database_url
 
 engine = create_engine(
     DATABASE_URL,
