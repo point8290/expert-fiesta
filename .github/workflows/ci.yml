@@ -53,3 +53,23 @@ jobs:
         run: docker build -t lmvs-backend ./backend
       - name: Build frontend image
         run: docker build -t lmvs-frontend ./frontend
+
+  security:
+    name: Dependency & secret scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Python dependency audit
+        run: pip install pip-audit && pip-audit -r backend/requirements.txt || true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Node dependency audit
+        run: cd frontend && npm audit --audit-level=high || true
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     cloud_video_url: str = ""
     cloud_video_api_key: str = ""
 
+    # Observability (opt-in)
+    sentry_dsn: str = ""
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

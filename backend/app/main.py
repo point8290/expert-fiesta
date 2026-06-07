@@ -43,6 +43,13 @@ async def lifespan(app: FastAPI):
 
 
 setup_logging()
+
+# PR1-3: error tracking, opt-in via SENTRY_DSN (no-op when unset).
+if get_settings().sentry_dsn:  # pragma: no cover - requires a DSN + the SDK
+    import sentry_sdk
+
+    sentry_sdk.init(dsn=get_settings().sentry_dsn, environment=get_settings().env)
+
 app = FastAPI(title="Local Music Video Studio", lifespan=lifespan)
 _request_log = logging.getLogger("lmvs.request")
 
