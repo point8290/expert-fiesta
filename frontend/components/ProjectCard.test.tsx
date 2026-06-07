@@ -14,6 +14,9 @@ const project: Project = {
   targetDuration: 60,
   aspectRatio: "16:9",
   status: "draft",
+  videoBackend: "ltx",
+  transition: "cut",
+  transitionDuration: 0.5,
   createdAt: "2026-06-06T00:00:00Z",
   updatedAt: "2026-06-06T00:00:00Z",
 };

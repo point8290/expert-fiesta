@@ -26,6 +26,7 @@ const character: Character = {
   identityAnchors: ["yellow hoodie", "messy black hair"],
   refImagePath: null,
   refStatus: "pending",
+  loraPath: null,
 };
 
 describe("CharacterCard", () => {

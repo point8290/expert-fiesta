@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import type {
   Audio,
   Character,
+  ConsistencyScore,
   Job,
   Lyrics,
   Project,
@@ -27,6 +28,9 @@ export default function ProjectPipelinePage({
   const [characters, setCharacters] = useState<Character[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [scores, setScores] = useState<ConsistencyScore[]>([]);
+  const [cuts, setCuts] = useState<number[] | null>(null);
+  const [segments, setSegments] = useState(8);
   const [render, setRender] = useState<RenderResult | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +74,17 @@ export default function ProjectPipelinePage({
     setCharacters((cur) => cur.map((c) => (c.id === updated.id ? updated : c)));
   }
 
+  async function saveSettings(patch: Partial<Project>) {
+    await guard("settings", async () =>
+      setProject(await api.updateProject(id, patch))
+    );
+  }
+
+  const sceneLabel = (sceneId: string) =>
+    `Scene ${scenes.find((s) => s.id === sceneId)?.number ?? "?"}`;
+  const characterName = (characterId: string) =>
+    characters.find((c) => c.id === characterId)?.name ?? characterId;
+
   if (!project) return <p className="muted">Loading project…</p>;
 
   return (
@@ -80,6 +95,36 @@ export default function ProjectPipelinePage({
         {project.targetDuration}s · {project.aspectRatio}
       </p>
       {error && <p className="error">{error}</p>}
+
+      {/* Settings */}
+      <section className="section">
+        <h2>Settings</h2>
+        <div className="grid">
+          <div>
+            <label>Video model</label>
+            <select
+              value={project.videoBackend}
+              disabled={busy === "settings"}
+              onChange={(e) => saveSettings({ videoBackend: e.target.value })}
+            >
+              <option value="ltx">LTX-Video (fast)</option>
+              <option value="wan">Wan 2.2</option>
+              <option value="hunyuan">HunyuanVideo</option>
+            </select>
+          </div>
+          <div>
+            <label>Transition</label>
+            <select
+              value={project.transition}
+              disabled={busy === "settings"}
+              onChange={(e) => saveSettings({ transition: e.target.value })}
+            >
+              <option value="cut">Hard cut</option>
+              <option value="crossfade">Crossfade</option>
+            </select>
+          </div>
+        </div>
+      </section>
 
       {/* Lyrics */}
       <section className="section">
@@ -216,10 +261,78 @@ export default function ProjectPipelinePage({
         ))}
       </section>
 
+      {/* Quality (Phase 4) */}
+      <section className="section">
+        <div className="row">
+          <h2>6 · Quality</h2>
+        </div>
+
+        <div className="row" style={{ marginTop: 8 }}>
+          <strong>Character consistency</strong>
+          <button
+            className="btn secondary"
+            disabled={busy === "consistency"}
+            onClick={() =>
+              guard("consistency", async () =>
+                setScores(await api.listConsistency(id))
+              )
+            }
+          >
+            Score keyframes
+          </button>
+        </div>
+        {scores.length === 0 ? (
+          <p className="muted">
+            Generate keyframes and approve a character reference, then score.
+          </p>
+        ) : (
+          scores.map((s, i) => (
+            <div key={i} className="meta">
+              <span className="badge">{sceneLabel(s.sceneId)}</span>
+              <span>{characterName(s.characterId)}</span>
+              <span className={s.score >= 0.6 ? "muted" : "error"}>
+                {s.score.toFixed(2)}
+              </span>
+            </div>
+          ))
+        )}
+
+        <div className="row" style={{ marginTop: 16 }}>
+          <strong>Beat-synced cut suggestions</strong>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input
+              type="number"
+              min={2}
+              value={segments}
+              onChange={(e) => setSegments(Number(e.target.value))}
+              style={{ width: 80 }}
+            />
+            <button
+              className="btn secondary"
+              disabled={busy === "cuts"}
+              onClick={() =>
+                guard("cuts", async () =>
+                  setCuts((await api.getBeatCuts(id, segments)).cuts)
+                )
+              }
+            >
+              Suggest cuts
+            </button>
+          </div>
+        </div>
+        {cuts && (
+          <p className="muted">
+            {cuts.length
+              ? cuts.map((c) => `${c.toFixed(1)}s`).join(" · ")
+              : "No beats available — analyze the audio first."}
+          </p>
+        )}
+      </section>
+
       {/* Render */}
       <section className="section">
         <div className="row">
-          <h2>6 · Final Render</h2>
+          <h2>7 · Final Render</h2>
           <button
             className="btn"
             disabled={busy === "render" || scenes.length === 0}

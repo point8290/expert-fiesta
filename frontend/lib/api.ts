@@ -1,7 +1,9 @@
 // Typed client for the Local Music Video Studio backend.
 import type {
   Audio,
+  BeatCuts,
   Character,
+  ConsistencyScore,
   Job,
   Lyrics,
   Project,
@@ -142,6 +144,12 @@ export const api = {
   // Jobs
   getJob: (jobId: string) => request<Job>(`/jobs/${jobId}`),
   listJobs: (id: string) => request<Job[]>(`/projects/${id}/jobs`),
+
+  // Phase 4 quality
+  listConsistency: (id: string) =>
+    request<ConsistencyScore[]>(`/projects/${id}/consistency`),
+  getBeatCuts: (id: string, segments: number) =>
+    request<BeatCuts>(`/projects/${id}/beat-cuts?segments=${segments}`),
 
   // Render
   renderFinal: (id: string) =>

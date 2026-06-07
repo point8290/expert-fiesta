@@ -117,4 +117,20 @@ describe("api client", () => {
     const [url] = fetchMock.mock.calls[0];
     expect(url).toMatch(/\/projects\/p1\/jobs$/);
   });
+
+  it("lists consistency scores", async () => {
+    const fetchMock = mockFetch([{ sceneId: "s1", characterId: "c1", score: 0.9 }]);
+    const scores = await api.listConsistency("p1");
+    expect(scores[0].score).toBe(0.9);
+    const [url] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/projects\/p1\/consistency$/);
+  });
+
+  it("fetches beat-synced cut suggestions with a segment count", async () => {
+    const fetchMock = mockFetch({ cuts: [14.5, 29.7, 45.6] });
+    const result = await api.getBeatCuts("p1", 4);
+    expect(result.cuts).toHaveLength(3);
+    const [url] = fetchMock.mock.calls[0];
+    expect(url).toMatch(/\/projects\/p1\/beat-cuts\?segments=4$/);
+  });
 });

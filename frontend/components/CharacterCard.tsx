@@ -49,6 +49,18 @@ export function CharacterCard({
       {character.refImagePath && (
         <p className="muted">{character.refImagePath.split("/").pop()}</p>
       )}
+      <label>LoRA path (optional)</label>
+      <input
+        defaultValue={character.loraPath ?? ""}
+        placeholder="/loras/character.safetensors"
+        disabled={busy}
+        onBlur={(e) => {
+          const value = e.target.value.trim();
+          if (value !== (character.loraPath ?? "")) {
+            run(() => api.updateCharacter(character.id, { loraPath: value || null }));
+          }
+        }}
+      />
       <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
         <button
           className="btn secondary"
