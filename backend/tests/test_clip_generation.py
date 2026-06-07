@@ -158,3 +158,23 @@ def test_approve_generated_clip(client, setup):
 
 def test_generate_clip_unknown_scene_returns_404(client, setup):
     assert client.post("/scenes/nope/clip/generate").status_code == 404
+
+
+def test_async_mode_enqueues_without_blocking(client, setup, monkeypatch):
+    # PR0-5: with ASYNC_JOBS the endpoint returns a queued job; the worker runs it.
+    from app.config import get_settings
+
+    _, _, scenes = setup
+    _approve_keyframe(client, scenes[0]["id"])
+
+    monkeypatch.setenv("ASYNC_JOBS", "true")
+    get_settings.cache_clear()
+    try:
+        res = client.post(f"/scenes/{scenes[0]['id']}/clip/generate")
+        assert res.status_code == 200
+        assert res.json()["status"] == "queued"
+        # Not generated yet — the worker hasn't run.
+        scene = client.get(f"/scenes/{scenes[0]['id']}").json()
+        assert scene["clipStatus"] == "pending"
+    finally:
+        get_settings.cache_clear()

@@ -2,9 +2,12 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 pydantic
+pydantic-settings
 python-multipart
 httpx
 pytest
 websocket-client
 bcrypt
 pyjwt
+psycopg[binary]
+alembic

@@ -3,8 +3,9 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from .database import Base, engine
+from .config import assert_production_ready, get_settings
 from .routers import (
     audio,
     auth,
@@ -21,8 +22,9 @@ from .routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # For local-first single-user use; later phases can switch to migrations.
-    Base.metadata.create_all(bind=engine)
+    # Refuse to boot insecurely in production (e.g. default AUTH_SECRET).
+    assert_production_ready(get_settings())
+    # Schema is managed by Alembic — run `alembic upgrade head` before starting.
     # P2-S1 AC3: validate committed ComfyUI workflows load on startup.
     try:
         from .comfyui.client import ComfyUIClient
@@ -36,6 +38,16 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Local Music Video Studio", lifespan=lifespan)
+
+# Allow the browser frontend to call the API cross-origin (configurable via
+# CORS_ORIGINS; defaults to the local dev UI).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_settings().cors_origin_list,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health", tags=["meta"])

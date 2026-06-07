@@ -50,6 +50,20 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return (await res.json()) as T;
 }
 
+async function downloadFile(path: string, filename: string): Promise<void> {
+  const headers: Record<string, string> = {};
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`${BASE_URL}${path}`, { headers });
+  if (!res.ok) throw new ApiError(res.status, "Download failed");
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function jsonInit(method: string, body?: unknown): RequestInit {
   return {
     method,
@@ -188,4 +202,6 @@ export const api = {
       `/projects/${id}/render${preset ? `?preset=${preset}` : ""}`,
       { method: "POST" },
     ),
+  downloadRender: (id: string) =>
+    downloadFile(`/projects/${id}/render/file`, "final.mp4"),
 };

@@ -370,8 +370,14 @@ export default function ProjectPipelinePage({
           </div>
         </div>
         {render && (
-          <p className="muted">
-            {render.status} → {render.outputPath}
+          <p className="muted" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <span>{render.status}</span>
+            <button
+              className="btn secondary"
+              onClick={() => api.downloadRender(id)}
+            >
+              Download MP4
+            </button>
           </p>
         )}
       </section>

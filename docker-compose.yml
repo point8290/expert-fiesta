@@ -16,10 +16,27 @@ services:
       COMFYUI_HOST: http://comfyui:8188
       STORAGE_DIR: /data/projects
       DATABASE_URL: sqlite:////data/localmv.db
+      ASYNC_JOBS: "true"
     volumes:
       - studio-data:/data
     depends_on:
       - ollama
+
+  # Background worker: processes queued generation jobs one at a time (serializes
+  # GPU). Shares the backend image, DB, and asset volume.
+  worker:
+    build: ./backend
+    command: ["python", "-m", "app.worker"]
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      COMFYUI_HOST: http://comfyui:8188
+      STORAGE_DIR: /data/projects
+      DATABASE_URL: sqlite:////data/localmv.db
+      ASYNC_JOBS: "true"
+    volumes:
+      - studio-data:/data
+    depends_on:
+      - backend
 
   frontend:
     build: ./frontend
