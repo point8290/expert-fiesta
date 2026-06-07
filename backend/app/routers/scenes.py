@@ -1,4 +1,6 @@
 """P1-S6 — Manage individual scenes (owner-scoped, P5-S2)."""
+import os
+
 from fastapi import (
     APIRouter,
     Depends,
@@ -7,6 +9,7 @@ from fastapi import (
     UploadFile,
     status,
 )
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -37,6 +40,7 @@ from ..services.storyboard import (
     regenerate_scene_content,
 )
 from ..storage import Storage
+from ..uploads import enforce_upload_size
 from ..video.backends import VideoBackend
 
 router = APIRouter(prefix="/scenes", tags=["scenes"])
@@ -69,6 +73,20 @@ def owned_scene(
 @router.get("/{scene_id}", response_model=SceneRead)
 def get_scene(scene: Scene = Depends(owned_scene)):
     return scene
+
+
+@router.get("/{scene_id}/keyframe/file")
+def serve_keyframe(scene: Scene = Depends(owned_scene)):
+    if not scene.keyframe_path or not os.path.exists(scene.keyframe_path):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Keyframe not found")
+    return FileResponse(scene.keyframe_path)
+
+
+@router.get("/{scene_id}/clip/file")
+def serve_clip(scene: Scene = Depends(owned_scene)):
+    if not scene.clip_path or not os.path.exists(scene.clip_path):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Clip not found")
+    return FileResponse(scene.clip_path)
 
 
 @router.patch("/{scene_id}", response_model=SceneRead)
@@ -132,6 +150,7 @@ def upload_clip(
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
 ):
+    enforce_upload_size(file)
     if file.content_type not in ALLOWED_VIDEO_TYPES:
         raise HTTPException(
             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
@@ -229,6 +248,7 @@ def upload_keyframe(
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
 ):
+    enforce_upload_size(file)
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,

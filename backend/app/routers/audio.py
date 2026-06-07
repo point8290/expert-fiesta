@@ -15,6 +15,7 @@ from ..models import Audio, Lyrics, User
 from ..ownership import require_project
 from ..schemas import AudioRead
 from ..storage import Storage
+from ..uploads import enforce_upload_size
 
 router = APIRouter(prefix="/projects/{project_id}/audio", tags=["audio"])
 
@@ -37,6 +38,7 @@ def upload_audio(
     current_user: User = Depends(get_current_user),
 ):
     require_project(db, project_id, current_user)
+    enforce_upload_size(file)
     if file.content_type not in ALLOWED_AUDIO_TYPES:
         raise HTTPException(
             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,

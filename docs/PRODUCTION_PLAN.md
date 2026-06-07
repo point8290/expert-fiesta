@@ -38,20 +38,20 @@ Status: `todo` · `in-progress` · `done`
 - AC2: a single worker processes jobs FIFO (serializes GPU); status/progress update live.
 - AC3: endpoints that generate (clip, later keyframe) return a job, not a blocking call.
 
-### PR0-6 — Authenticated media serving · `todo`
+### PR0-6 — Authenticated media serving · `done`
 *Fetch the actual bytes (keyframes, clips, final MP4) over HTTP.*
 - AC1: `GET /scenes/{id}/keyframe/file`, `.../clip/file`, `GET /projects/{id}/render/file` stream the asset to the owner.
 - AC2: non-owners get 404; missing asset gives a clear error.
 - AC3: frontend links to these instead of raw filesystem paths.
 
-### PR0-7 — Upload size limits · `todo`
+### PR0-7 — Upload size limits · `done`
 - AC1: audio/video/image uploads over a configurable cap are rejected (413).
 
-### PR0-8 — Production frontend build · `todo`
+### PR0-8 — Production frontend build · `done`
 - AC1: `frontend/Dockerfile` uses `next build && next start`.
 - AC2: `NEXT_PUBLIC_API_URL` is build-time configurable; documented per-env.
 
-### PR0-9 — Reverse proxy + TLS (deploy artifact) · `todo`
+### PR0-9 — Reverse proxy + TLS (deploy artifact) · `done`
 - AC1: a sample proxy config (Caddy/nginx) terminates TLS and routes `/api` → backend, `/` → frontend.
 
 ---
@@ -115,5 +115,5 @@ Status: `todo` · `in-progress` · `done`
 ---
 
 ## Suggested order (first deployable slice)
-PR0-1 ✅ → PR0-2 ✅ → PR0-3 ✅ → PR0-4 ✅ → PR0-5 ✅ → PR0-6 → PR0-7 → PR0-8 → PR0-9,
+PR0-1 ✅ → PR0-2 ✅ → PR0-3 ✅ → PR0-4 ✅ → PR0-5 ✅ → PR0-6 ✅ → PR0-7 ✅ → PR0-8 ✅ → PR0-9 ✅,
 then P1, then P2.

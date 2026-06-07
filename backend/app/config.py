@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     # Web
     cors_origins: str = "http://localhost:3000"
+    max_upload_mb: int = 100
 
     # Jobs: when true, generation endpoints enqueue and a separate worker runs
     # them; when false (default), they run inline in the request.

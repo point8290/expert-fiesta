@@ -7,9 +7,10 @@ RUN npm ci
 
 COPY . .
 
-ENV NEXT_PUBLIC_API_URL=http://localhost:8000
-EXPOSE 3000
+# NEXT_PUBLIC_* is baked at build time — set per environment via build arg.
+ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+RUN npm run build
 
-# Dev server for the local-first workflow; swap to `npm run build && npm start`
-# for a production image.
-CMD ["npm", "run", "dev"]
+EXPOSE 3000
+CMD ["npm", "start"]

@@ -3,6 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+import os
+
+from fastapi.responses import FileResponse
+
 from ..adapters.render import Renderer
 from ..database import get_db
 from ..dependencies import get_current_user, get_renderer, get_storage
@@ -14,6 +18,22 @@ from ..services.render import RenderError, render_project
 from ..storage import Storage
 
 router = APIRouter(tags=["render"])
+
+
+@router.get("/projects/{project_id}/render/file")
+def serve_render(
+    project_id: str,
+    db: Session = Depends(get_db),
+    storage: Storage = Depends(get_storage),
+    current_user: User = Depends(get_current_user),
+):
+    require_project(db, project_id, current_user)
+    path = storage.project_dir(project_id, "renders") / "final.mp4"
+    if not os.path.exists(path):
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND, detail="No render yet for this project"
+        )
+    return FileResponse(str(path), filename="final.mp4")
 
 
 @router.post("/projects/{project_id}/render", response_model=RenderRead)

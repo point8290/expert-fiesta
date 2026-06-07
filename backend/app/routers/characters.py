@@ -28,6 +28,7 @@ from ..services.characters import CharacterGenerationError, generate_characters
 from ..services.consistency import score_scenes
 from ..services.images import generate_character_reference
 from ..storage import Storage
+from ..uploads import enforce_upload_size
 
 router = APIRouter(tags=["characters"])
 
@@ -154,6 +155,7 @@ def upload_reference(
     db: Session = Depends(get_db),
     storage: Storage = Depends(get_storage),
 ):
+    enforce_upload_size(file)
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(
             status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
