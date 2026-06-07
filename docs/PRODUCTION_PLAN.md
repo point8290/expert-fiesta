@@ -21,12 +21,12 @@ Status: `todo` · `in-progress` · `done`
 - AC2: startup fails fast if `AUTH_SECRET` is unset/default while `ENV=production`.
 - AC3: existing modules read settings instead of `os.environ` scattered around.
 
-### PR0-3 — PostgreSQL support · `todo`
+### PR0-3 — PostgreSQL support · `done`
 *Run on Postgres, not just SQLite.*
 - AC1: `DATABASE_URL` drives the engine; Postgres works (psycopg).
 - AC2: SQLite-only assumptions removed; tests still run on SQLite.
 
-### PR0-4 — Alembic migrations · `todo`
+### PR0-4 — Alembic migrations · `done`
 *Schema is migration-managed, not `create_all`.*
 - AC1: Alembic configured; an initial migration captures the current schema.
 - AC2: app startup no longer calls `create_all`; a documented `alembic upgrade head` step exists.
@@ -115,5 +115,5 @@ Status: `todo` · `in-progress` · `done`
 ---
 
 ## Suggested order (first deployable slice)
-PR0-1 ✅ → PR0-2 ✅ → PR0-3 → PR0-4 → PR0-5 → PR0-6 → PR0-7 → PR0-8 → PR0-9,
+PR0-1 ✅ → PR0-2 ✅ → PR0-3 ✅ → PR0-4 ✅ → PR0-5 → PR0-6 → PR0-7 → PR0-8 → PR0-9,
 then P1, then P2.

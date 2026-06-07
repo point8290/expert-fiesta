@@ -47,11 +47,16 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt          # core + test deps (no GPU/ML needed)
 pip install -r requirements-ml.txt        # librosa/numpy — only for real audio analysis
+alembic upgrade head                      # create/upgrade the database schema
 uvicorn app.main:app --reload
 ```
 
-The SQLite database (`localmv.db`) and an asset folder (`projects/`) are created
-automatically. Interactive API docs: **http://localhost:8000/docs**.
+The schema is managed by Alembic (run `alembic upgrade head` after pulling
+changes). An asset folder (`projects/`) is created on first upload. Interactive
+API docs: **http://localhost:8000/docs**.
+
+> Postgres: set `DATABASE_URL=postgresql+psycopg://user:pw@localhost:5432/lmvs`
+> (the driver is bundled) and re-run `alembic upgrade head`.
 
 Useful environment variables (all optional, sensible defaults):
 

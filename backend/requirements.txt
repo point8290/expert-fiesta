@@ -9,3 +9,5 @@ pytest
 websocket-client
 bcrypt
 pyjwt
+psycopg[binary]
+alembic

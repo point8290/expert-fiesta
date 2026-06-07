@@ -6,7 +6,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import assert_production_ready, get_settings
-from .database import Base, engine
 from .routers import (
     audio,
     auth,
@@ -25,8 +24,7 @@ from .routers import (
 async def lifespan(app: FastAPI):
     # Refuse to boot insecurely in production (e.g. default AUTH_SECRET).
     assert_production_ready(get_settings())
-    # For local-first single-user use; later phases can switch to migrations.
-    Base.metadata.create_all(bind=engine)
+    # Schema is managed by Alembic — run `alembic upgrade head` before starting.
     # P2-S1 AC3: validate committed ComfyUI workflows load on startup.
     try:
         from .comfyui.client import ComfyUIClient
