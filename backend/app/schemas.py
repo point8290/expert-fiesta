@@ -232,3 +232,12 @@ class LyricsData(CamelModel):
     body: str = Field(min_length=1)
     music_prompt: str = Field(min_length=1)
     emotional_arc: str = Field(min_length=1)
+
+
+class ProjectExport(CamelModel):
+    """A portable snapshot of a project's metadata (assets not bundled)."""
+
+    project: ProjectRead
+    lyrics: Optional[LyricsData] = None
+    characters: list[CharacterRead] = []
+    scenes: list[SceneRead] = []

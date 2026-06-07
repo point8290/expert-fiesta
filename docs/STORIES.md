@@ -179,7 +179,7 @@ clips, and final render.*
 ### P5-S2 — Multi-user + auth · `todo`
 - AC1: Users authenticate; projects are scoped per user.
 
-### P5-S3 — Project export/import · `todo`
+### P5-S3 — Project export/import · `done`
 - AC1: A project (metadata + assets) can be exported and re-imported.
 
 ### P5-S4 — Cloud fallback · `todo`
