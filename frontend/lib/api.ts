@@ -79,6 +79,7 @@ export const api = {
   generateStoryboard: (id: string) =>
     request<Scene[]>(`/projects/${id}/storyboard`, { method: "POST" }),
   listScenes: (id: string) => request<Scene[]>(`/projects/${id}/scenes`),
+  getScene: (sceneId: string) => request<Scene>(`/scenes/${sceneId}`),
   updateScene: (sceneId: string, data: Partial<Scene>) =>
     request<Scene>(`/scenes/${sceneId}`, jsonInit("PATCH", data)),
   regenerateScenePrompt: (sceneId: string) =>

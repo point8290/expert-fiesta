@@ -2,9 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { CharacterCard } from "@/components/CharacterCard";
 import { SceneCard } from "@/components/SceneCard";
 import { api } from "@/lib/api";
-import type { Audio, Lyrics, Project, RenderResult, Scene } from "@/lib/types";
+import type {
+  Audio,
+  Character,
+  Job,
+  Lyrics,
+  Project,
+  RenderResult,
+  Scene,
+} from "@/lib/types";
 
 export default function ProjectPipelinePage({
   params,
@@ -15,17 +24,24 @@ export default function ProjectPipelinePage({
   const [project, setProject] = useState<Project | null>(null);
   const [lyrics, setLyrics] = useState<Lyrics | null>(null);
   const [audio, setAudio] = useState<Audio | null>(null);
+  const [characters, setCharacters] = useState<Character[]>([]);
   const [scenes, setScenes] = useState<Scene[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [render, setRender] = useState<RenderResult | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLInputElement>(null);
 
+  const refreshJobs = () => api.listJobs(id).then(setJobs).catch(() => {});
+
   useEffect(() => {
     api.getProject(id).then(setProject).catch(() => {});
     api.getLyrics(id).then(setLyrics).catch(() => {});
     api.getAudio(id).then(setAudio).catch(() => {});
+    api.listCharacters(id).then(setCharacters).catch(() => {});
     api.listScenes(id).then(setScenes).catch(() => {});
+    refreshJobs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   async function guard(tag: string, fn: () => Promise<void>) {
@@ -47,6 +63,11 @@ export default function ProjectPipelinePage({
 
   function patchScene(updated: Scene) {
     setScenes((cur) => cur.map((s) => (s.id === updated.id ? updated : s)));
+    refreshJobs();
+  }
+
+  function patchCharacter(updated: Character) {
+    setCharacters((cur) => cur.map((c) => (c.id === updated.id ? updated : c)));
   }
 
   if (!project) return <p className="muted">Loading project…</p>;
@@ -126,10 +147,34 @@ export default function ProjectPipelinePage({
         )}
       </section>
 
+      {/* Characters */}
+      <section className="section">
+        <div className="row">
+          <h2>3 · Characters</h2>
+          <button
+            className="btn secondary"
+            disabled={busy === "characters"}
+            onClick={() =>
+              guard("characters", async () =>
+                setCharacters(await api.generateCharacters(id))
+              )
+            }
+          >
+            {characters.length ? "Regenerate bible" : "Generate bible"}
+          </button>
+        </div>
+        {characters.length === 0 && (
+          <p className="muted">No characters yet.</p>
+        )}
+        {characters.map((c) => (
+          <CharacterCard key={c.id} character={c} onChange={patchCharacter} />
+        ))}
+      </section>
+
       {/* Storyboard */}
       <section className="section">
         <div className="row">
-          <h2>3 · Storyboard</h2>
+          <h2>4 · Storyboard</h2>
           <button
             className="btn secondary"
             disabled={busy === "storyboard"}
@@ -147,10 +192,34 @@ export default function ProjectPipelinePage({
         ))}
       </section>
 
+      {/* Jobs */}
+      <section className="section">
+        <div className="row">
+          <h2>5 · Jobs</h2>
+          <button className="btn secondary" onClick={refreshJobs}>
+            Refresh
+          </button>
+        </div>
+        {jobs.length === 0 && <p className="muted">No generation jobs yet.</p>}
+        {jobs.map((job) => (
+          <div key={job.id} className="meta">
+            <span className="badge">{job.type}</span>
+            <span>{job.status}</span>
+            {job.status === "queued" && job.queuePosition != null && (
+              <span className="muted">queue #{job.queuePosition}</span>
+            )}
+            {job.status === "running" && (
+              <span className="muted">{Math.round(job.progress * 100)}%</span>
+            )}
+            {job.error && <span className="error">{job.error}</span>}
+          </div>
+        ))}
+      </section>
+
       {/* Render */}
       <section className="section">
         <div className="row">
-          <h2>4 · Final Render</h2>
+          <h2>6 · Final Render</h2>
           <button
             className="btn"
             disabled={busy === "render" || scenes.length === 0}
