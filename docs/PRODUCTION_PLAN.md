@@ -58,33 +58,33 @@ Status: `todo` · `in-progress` · `done`
 
 ## P1 — Important
 
-### PR1-1 — Auth hardening · `todo`
+### PR1-1 — Auth hardening · `in-progress`
 - AC1: rate-limit `/auth/login` + `/auth/register`.
-- AC2: refresh tokens or server-side revocation; access tokens short-lived.
+- AC2: access tokens are short-lived (configurable `ACCESS_TOKEN_MINUTES`, default 60); **refresh-token rotation / revocation deferred** to a follow-up.
 - AC3: frontend intercepts 401 → clear token + redirect to `/login`.
 
-### PR1-2 — Structured logging + request IDs · `todo`
+### PR1-2 — Structured logging + request IDs · `done`
 - AC1: JSON logs with a per-request id; job lifecycle logged.
 
-### PR1-3 — Error tracking · `todo`
-- AC1: Sentry (or similar) wired on backend + frontend, opt-in via DSN env.
+### PR1-3 — Error tracking · `done`
+- AC1: backend Sentry init opt-in via `SENTRY_DSN`; frontend hook via `NEXT_PUBLIC_SENTRY_DSN` (documented).
 
-### PR1-4 — Readiness probe · `todo`
+### PR1-4 — Readiness probe · `done`
 - AC1: `GET /ready` checks DB connectivity (and optionally model servers); `/health` stays liveness-only.
 
-### PR1-5 — Per-user quotas · `todo`
+### PR1-5 — Per-user quotas · `done`
 - AC1: configurable caps on generation jobs / projects per user; over-limit → 429.
 - AC2: enforcement reads the existing usage metering.
 
-### PR1-6 — Pagination · `todo`
+### PR1-6 — Pagination · `done`
 - AC1: `GET /projects`, `/scenes`, `/projects/{id}/jobs` accept `limit`/`offset` (or cursor) with sane defaults/caps.
 
-### PR1-7 — CI publish + deploy · `todo`
+### PR1-7 — CI publish + deploy · `done`
 - AC1: build and push versioned images (GHCR) on tag/merge.
 - AC2: a deploy workflow runs `alembic upgrade head` then rolls out.
 - AC3: dependency + secret scanning (pip-audit, npm audit, gitleaks).
 
-### PR1-8 — Real-path integration smoke tests · `todo`
+### PR1-8 — Real-path integration smoke tests · `done`
 - AC1: opt-in tests exercise real FFmpeg render, librosa analysis, and an Ollama/ComfyUI happy path (marked, not in the default unit run).
 
 ---

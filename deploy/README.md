@@ -18,3 +18,12 @@ The backend image runs `alembic upgrade head` on start.
 ## Jobs
 Set `ASYNC_JOBS=true` and run the `worker` service so generation runs off the
 request path (see `docker-compose.yml`).
+
+## Observability (opt-in)
+- Backend: set `SENTRY_DSN` to enable error tracking.
+- Frontend: set `NEXT_PUBLIC_SENTRY_DSN` (add `@sentry/nextjs` for full tracing).
+- Every API response carries an `X-Request-ID` (logged as JSON) for correlation.
+
+## Releases
+Tag `vX.Y.Z` to build + push images to GHCR (`.github/workflows/release.yml`),
+then run `alembic upgrade head` and roll out. CI also runs dependency + secret scans.

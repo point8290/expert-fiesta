@@ -30,6 +30,7 @@ from ..schemas import JobRead, PromptVersionRead, SceneRead, SceneUpdate
 from ..services.clips import BackendError, generate_clip_for_scene, resolve_backend
 from ..services.images import generate_scene_keyframe
 from ..services.jobs import create_job, execute_job
+from ..services.quota import assert_active_job_quota
 from ..services.prompt_versions import (
     PROMPT_FIELDS,
     latest_version_number,
@@ -208,12 +209,14 @@ def generate_clip(
     db: Session = Depends(get_db),
     registry: dict[str, VideoBackend] = Depends(get_video_registry),
     storage: Storage = Depends(get_storage),
+    current_user: User = Depends(get_current_user),
 ):
     if scene.keyframe_status != "approved" or not scene.keyframe_path:
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             detail="Scene needs an approved keyframe before generating a clip",
         )
+    assert_active_job_quota(db, current_user)
     project = db.get(Project, scene.project_id)
     try:
         backend = resolve_backend(registry, project, scene)

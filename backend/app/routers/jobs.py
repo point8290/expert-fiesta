@@ -1,5 +1,5 @@
 """P2-S6 — Job status + queue endpoints."""
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -55,6 +55,8 @@ def get_job(
 @router.get("/projects/{project_id}/jobs", response_model=list[JobRead])
 def list_jobs(
     project_id: str,
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -64,6 +66,8 @@ def list_jobs(
             select(Job)
             .where(Job.project_id == project_id)
             .order_by(Job.created_at.desc())
+            .offset(offset)
+            .limit(limit)
         )
     )
     return [_with_position(db, job) for job in jobs]

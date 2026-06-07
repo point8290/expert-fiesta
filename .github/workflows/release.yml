@@ -1,0 +1,40 @@
+name: Release
+
+# Build and publish versioned images to GHCR on a version tag.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push backend image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}/backend
+          docker build -t $IMAGE:${{ github.ref_name }} -t $IMAGE:latest ./backend
+          docker push $IMAGE:${{ github.ref_name }}
+          docker push $IMAGE:latest
+      - name: Build & push frontend image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}/frontend
+          docker build -t $IMAGE:${{ github.ref_name }} -t $IMAGE:latest ./frontend
+          docker push $IMAGE:${{ github.ref_name }}
+          docker push $IMAGE:latest
+
+  # Deploy is intentionally a manual/placeholder step: run migrations, then roll
+  # out the new images. Wire this to your platform (Fly, ECS, k8s, etc.).
+  deploy:
+    needs: images
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Run 'alembic upgrade head' against the prod DB, then roll out the new images."

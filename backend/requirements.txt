@@ -11,3 +11,4 @@ bcrypt
 pyjwt
 psycopg[binary]
 alembic
+sentry-sdk
