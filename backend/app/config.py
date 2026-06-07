@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     max_projects_per_user: int = 50
     max_active_jobs_per_user: int = 50
 
+    # Auth: short-lived access tokens + simple rate limiting on auth endpoints.
+    access_token_minutes: int = 60
+    rate_limit_window_seconds: int = 60
+    rate_limit_max_attempts: int = 10
+
     # Model servers / external services
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "llama3.1"

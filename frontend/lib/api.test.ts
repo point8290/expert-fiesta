@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError, api } from "./api";
-import { clearToken, setToken } from "./auth";
+import { clearToken, getToken, setToken } from "./auth";
 
 function mockFetch(body: unknown, ok = true, status = 200) {
   const fn = vi.fn().mockResolvedValue({
@@ -76,6 +76,13 @@ describe("api client", () => {
       name: "ApiError",
       status: 404,
     });
+  });
+
+  it("clears the token on a 401 response", async () => {
+    setToken("expired-token");
+    mockFetch({ detail: "Not authenticated" }, false, 401);
+    await expect(api.listProjects()).rejects.toMatchObject({ status: 401 });
+    expect(getToken()).toBeNull();
   });
 
   it("generates characters via POST", async () => {

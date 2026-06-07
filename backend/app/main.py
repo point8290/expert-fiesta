@@ -1,5 +1,6 @@
 """FastAPI application entrypoint for the Local Music Video Studio backend."""
 import logging
+import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -9,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from .config import assert_production_ready, get_settings
 from .database import get_db
+from .observability import request_id_var, setup_logging
 from .routers import (
     audio,
     auth,
@@ -40,7 +42,24 @@ async def lifespan(app: FastAPI):
     yield
 
 
+setup_logging()
 app = FastAPI(title="Local Music Video Studio", lifespan=lifespan)
+_request_log = logging.getLogger("lmvs.request")
+
+
+@app.middleware("http")
+async def request_context(request, call_next):
+    rid = request.headers.get("X-Request-ID") or uuid.uuid4().hex
+    token = request_id_var.set(rid)
+    try:
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = rid
+        _request_log.info(
+            "%s %s -> %s", request.method, request.url.path, response.status_code
+        )
+        return response
+    finally:
+        request_id_var.reset(token)
 
 # Allow the browser frontend to call the API cross-origin (configurable via
 # CORS_ORIGINS; defaults to the local dev UI).

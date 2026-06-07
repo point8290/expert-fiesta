@@ -7,7 +7,6 @@ import jwt
 from ..config import get_settings
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_TTL = timedelta(hours=24)
 
 
 def _secret() -> str:
@@ -26,7 +25,8 @@ def verify_password(password: str, hashed: str) -> bool:
 
 
 def create_access_token(user_id: str) -> str:
-    payload = {"sub": user_id, "exp": datetime.now(timezone.utc) + ACCESS_TOKEN_TTL}
+    ttl = timedelta(minutes=get_settings().access_token_minutes)
+    payload = {"sub": user_id, "exp": datetime.now(timezone.utc) + ttl}
     return jwt.encode(payload, _secret(), algorithm=ALGORITHM)
 
 

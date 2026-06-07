@@ -58,12 +58,12 @@ Status: `todo` · `in-progress` · `done`
 
 ## P1 — Important
 
-### PR1-1 — Auth hardening · `todo`
+### PR1-1 — Auth hardening · `in-progress`
 - AC1: rate-limit `/auth/login` + `/auth/register`.
-- AC2: refresh tokens or server-side revocation; access tokens short-lived.
+- AC2: access tokens are short-lived (configurable `ACCESS_TOKEN_MINUTES`, default 60); **refresh-token rotation / revocation deferred** to a follow-up.
 - AC3: frontend intercepts 401 → clear token + redirect to `/login`.
 
-### PR1-2 — Structured logging + request IDs · `todo`
+### PR1-2 — Structured logging + request IDs · `done`
 - AC1: JSON logs with a per-request id; job lifecycle logged.
 
 ### PR1-3 — Error tracking · `todo`

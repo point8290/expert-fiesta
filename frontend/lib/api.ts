@@ -1,5 +1,5 @@
 // Typed client for the Local Music Video Studio backend.
-import { getToken } from "./auth";
+import { clearToken, getToken } from "./auth";
 import type {
   Audio,
   AuthToken,
@@ -37,6 +37,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (token) headers["Authorization"] = `Bearer ${token}`;
   const res = await fetch(`${BASE_URL}${path}`, { ...init, headers });
   if (!res.ok) {
+    if (res.status === 401) {
+      // Token expired/invalid mid-session — drop it and bounce to login.
+      clearToken();
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
     let detail = res.statusText;
     try {
       const body = await res.json();
