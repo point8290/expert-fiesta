@@ -1,0 +1,22 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.db
+
+# Local assets / generated media (runtime storage dir, repo-root or backend/)
+/projects/
+backend/projects/
+backend/localmv.db
+
+# Build artifacts
+frontend/tsconfig.tsbuildinfo
+.next/
+
+# Node
+node_modules/
+.next/
+
+# OS
+.DS_Store

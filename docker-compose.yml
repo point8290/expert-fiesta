@@ -1,0 +1,60 @@
+# Local Music Video Studio — local stack.
+#
+#   docker compose up --build              # backend + frontend + Ollama
+#   docker compose --profile gpu up        # also starts ComfyUI (needs NVIDIA GPU)
+#
+# After startup, pull an LLM:
+#   docker compose exec ollama ollama pull llama3.1
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      COMFYUI_HOST: http://comfyui:8188
+      STORAGE_DIR: /data/projects
+      DATABASE_URL: sqlite:////data/localmv.db
+    volumes:
+      - studio-data:/data
+    depends_on:
+      - ollama
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-models:/root/.ollama
+
+  # Local image/video generation. Requires an NVIDIA GPU + nvidia-container-toolkit.
+  # Opt-in via the "gpu" profile so the core stack runs anywhere.
+  comfyui:
+    image: yanwk/comfyui-boot:latest
+    profiles: ["gpu"]
+    ports:
+      - "8188:8188"
+    volumes:
+      - comfyui-data:/root
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: ["gpu"]
+
+volumes:
+  studio-data:
+  ollama-models:
+  comfyui-data:
