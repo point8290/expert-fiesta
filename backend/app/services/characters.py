@@ -8,7 +8,7 @@ import json
 
 from pydantic import ValidationError
 
-from ..adapters.llm import LLMClient
+from ..adapters.llm import LLMClient, LLMError
 from ..models import Lyrics, Project
 from ..schemas import CharacterContent
 
@@ -46,16 +46,16 @@ def generate_characters(
     prompt = _build_prompt(project, lyrics)
     last_error: Exception | None = None
     for _ in range(MAX_ATTEMPTS):
-        raw = client.complete(SYSTEM_PROMPT, prompt)
         try:
+            raw = client.complete(SYSTEM_PROMPT, prompt)
             data = json.loads(raw)
             items = data["characters"] if isinstance(data, dict) else data
             chars = [CharacterContent.model_validate(item) for item in items]
             if chars:
                 return chars
             last_error = ValueError("empty character list")
-        except (json.JSONDecodeError, KeyError, TypeError, ValidationError) as exc:
+        except (json.JSONDecodeError, KeyError, TypeError, ValidationError, LLMError) as exc:
             last_error = exc
     raise CharacterGenerationError(
-        f"LLM failed to produce a valid character bible after {MAX_ATTEMPTS} attempts"
+        f"Character generation failed: {last_error}"
     ) from last_error

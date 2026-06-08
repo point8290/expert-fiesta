@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     # Model servers / external services
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "llama3.1"
+    llm_timeout_seconds: int = 120
     comfyui_host: str = "http://localhost:8188"
     acestep_model: str = "ace-step-v1"
     cloud_video_url: str = ""
