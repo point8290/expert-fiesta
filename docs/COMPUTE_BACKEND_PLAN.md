@@ -108,7 +108,7 @@ RunPod too — same adapter.
   Generic `Job.target_id` added (migration 0003). **Song async deferred** (its
   Audio-row lifecycle needs a placeholder/status of its own).
 
-### CB-4 — Fallback / circuit-breaker · `todo`
+### CB-4 — Fallback / circuit-breaker · `done`
 - On repeated RunPod failure, fall back to the managed video API (`cloud` slot);
   record the switch; clear user-facing status.
 
