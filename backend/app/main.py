@@ -87,14 +87,39 @@ def health():
 
 @app.get("/ready", tags=["meta"])
 def ready(db: Session = Depends(get_db)):
-    """Readiness — verify the database is reachable before taking traffic."""
+    """Readiness — verify the database (and, when configured, remote model
+    backends) are reachable before taking traffic."""
+    checks: dict[str, str] = {}
     try:
         db.execute(text("SELECT 1"))
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE, detail="database unavailable"
         ) from exc
-    return {"status": "ready", "checks": {"database": "ok"}}
+    checks["database"] = "ok"
+
+    settings = get_settings()
+    if settings.ready_check_backends:
+        from .services.readiness import check_backends
+
+        def probe(url: str) -> bool:
+            import httpx
+
+            try:
+                httpx.get(url, timeout=settings.ready_probe_timeout_seconds)
+                return True
+            except Exception:  # noqa: BLE001 - any transport error = not ready
+                return False
+
+        ok, backend_checks = check_backends(settings, probe)
+        checks.update(backend_checks)
+        if not ok:
+            raise HTTPException(
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail={"status": "not ready", "checks": checks},
+            )
+
+    return {"status": "ready", "checks": checks}
 
 
 app.include_router(auth.router)

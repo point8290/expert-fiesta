@@ -9,7 +9,7 @@ import json
 
 from pydantic import ValidationError
 
-from ..adapters.llm import LLMClient
+from ..adapters.llm import LLMClient, LLMError
 from ..models import Audio, Lyrics, Project, Scene
 from ..schemas import SceneContent
 
@@ -59,16 +59,15 @@ def _parse_scenes(raw: str) -> list[SceneContent]:
 def _generate_contents(client: LLMClient, prompt: str) -> list[SceneContent]:
     last_error: Exception | None = None
     for _ in range(MAX_ATTEMPTS):
-        raw = client.complete(SYSTEM_PROMPT, prompt)
         try:
-            contents = _parse_scenes(raw)
+            contents = _parse_scenes(client.complete(SYSTEM_PROMPT, prompt))
             if contents:
                 return contents
             last_error = ValueError("empty scene list")
-        except (json.JSONDecodeError, KeyError, TypeError, ValidationError) as exc:
+        except (json.JSONDecodeError, KeyError, TypeError, ValidationError, LLMError) as exc:
             last_error = exc
     raise StoryboardGenerationError(
-        f"LLM failed to produce a valid storyboard after {MAX_ATTEMPTS} attempts"
+        f"Storyboard generation failed: {last_error}"
     ) from last_error
 
 
@@ -92,13 +91,12 @@ def regenerate_scene_content(
     )
     last_error: Exception | None = None
     for _ in range(MAX_ATTEMPTS):
-        raw = client.complete(REGEN_SYSTEM_PROMPT, prompt)
         try:
-            return SceneContent.model_validate(json.loads(raw))
-        except (json.JSONDecodeError, ValidationError) as exc:
+            return SceneContent.model_validate(json.loads(client.complete(REGEN_SYSTEM_PROMPT, prompt)))
+        except (json.JSONDecodeError, ValidationError, LLMError) as exc:
             last_error = exc
     raise StoryboardGenerationError(
-        f"LLM failed to regenerate scene after {MAX_ATTEMPTS} attempts"
+        f"Scene regeneration failed: {last_error}"
     ) from last_error
 
 

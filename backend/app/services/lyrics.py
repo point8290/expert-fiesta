@@ -8,7 +8,7 @@ import json
 
 from pydantic import ValidationError
 
-from ..adapters.llm import LLMClient
+from ..adapters.llm import LLMClient, LLMError
 from ..models import Project
 from ..schemas import LyricsData
 
@@ -45,12 +45,12 @@ def generate_lyrics(project: Project, client: LLMClient) -> LyricsData:
     last_error: Exception | None = None
 
     for _ in range(MAX_ATTEMPTS):
-        raw = client.complete(SYSTEM_PROMPT, user_prompt)
         try:
+            raw = client.complete(SYSTEM_PROMPT, user_prompt)
             return LyricsData.model_validate(json.loads(raw))
-        except (json.JSONDecodeError, ValidationError) as exc:
+        except (json.JSONDecodeError, ValidationError, LLMError) as exc:
             last_error = exc
 
     raise LyricsGenerationError(
-        f"LLM failed to produce valid lyrics after {MAX_ATTEMPTS} attempts"
+        f"Lyrics generation failed: {last_error}"
     ) from last_error

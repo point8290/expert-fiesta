@@ -30,7 +30,7 @@ from ..schemas import JobRead, PromptVersionRead, SceneRead, SceneUpdate
 from ..services.clips import BackendError, generate_clip_for_scene, resolve_backend
 from ..services.images import generate_scene_keyframe
 from ..services.jobs import create_job, execute_job
-from ..services.quota import assert_active_job_quota
+from ..services.quota import assert_active_job_quota, assert_gpu_budget
 from ..services.prompt_versions import (
     PROMPT_FIELDS,
     latest_version_number,
@@ -182,6 +182,15 @@ def generate_keyframe(
     generator: ImageGenerator = Depends(get_image_generator),
     storage: Storage = Depends(get_storage),
 ):
+    scene.keyframe_prompt_version = latest_version_number(db, scene.id)
+    # CB-3: run on the worker in async mode; otherwise inline.
+    if get_settings().async_jobs:
+        scene.keyframe_status = "generating"
+        create_job(db, "keyframe", scene.project_id, scene_id=scene.id, target_id=scene.id)
+        db.commit()
+        db.refresh(scene)
+        return scene
+
     project = db.get(Project, scene.project_id)
     characters = list(
         db.scalars(select(Character).where(Character.project_id == scene.project_id))
@@ -189,7 +198,6 @@ def generate_keyframe(
     path = generate_scene_keyframe(project, scene, characters, generator, storage)
     scene.keyframe_path = path
     scene.keyframe_status = "generated"
-    scene.keyframe_prompt_version = latest_version_number(db, scene.id)
     db.commit()
     db.refresh(scene)
     return scene
@@ -217,6 +225,7 @@ def generate_clip(
             detail="Scene needs an approved keyframe before generating a clip",
         )
     assert_active_job_quota(db, current_user)
+    assert_gpu_budget(db, current_user)
     project = db.get(Project, scene.project_id)
     try:
         backend = resolve_backend(registry, project, scene)

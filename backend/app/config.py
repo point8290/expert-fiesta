@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     # Per-user quotas
     max_projects_per_user: int = 50
     max_active_jobs_per_user: int = 50
+    max_gpu_seconds_per_user: float = 0.0  # 0 = unlimited
+    gpu_cost_per_second: float = 0.0  # for cost estimation in usage
 
     # Auth: short-lived access tokens + simple rate limiting on auth endpoints.
     access_token_minutes: int = 60
@@ -43,10 +45,27 @@ class Settings(BaseSettings):
     # Model servers / external services
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "llama3.1"
+    llm_timeout_seconds: int = 120
+    # Hosted LLM (CB-1): provider = ollama | anthropic | openai
+    llm_provider: str = "ollama"
+    llm_api_key: str = ""
+    llm_model: str = ""  # empty -> provider default
+    llm_base_url: str = ""  # empty -> provider default
     comfyui_host: str = "http://localhost:8188"
+    # CB-2: image/video provider = local | runpod
+    comfyui_provider: str = "local"
+    runpod_api_key: str = ""
+    runpod_image_endpoint: str = ""
+    runpod_video_endpoint: str = ""
+    runpod_audio_endpoint: str = ""
     acestep_model: str = "ace-step-v1"
     cloud_video_url: str = ""
     cloud_video_api_key: str = ""
+
+    # CB-6: cold-start / readiness tuning. When true, /ready probes remote model
+    # backends (hosted LLM, RunPod) so a node only takes traffic once warm.
+    ready_check_backends: bool = False
+    ready_probe_timeout_seconds: float = 3.0
 
     # Observability (opt-in)
     sentry_dsn: str = ""

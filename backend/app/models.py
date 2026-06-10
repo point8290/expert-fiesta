@@ -148,11 +148,14 @@ class Job(Base):
         String, ForeignKey("projects.id", ondelete="CASCADE"), index=True
     )
     scene_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    # The entity the job acts on (scene/character/project), semantics by type.
+    target_id: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     type: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[str] = mapped_column(String, default="queued")
     progress: Mapped[float] = mapped_column(Float, default=0.0)
     error: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     result_path: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    gpu_seconds: Mapped[float] = mapped_column(Float, default=0.0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_now)
 
 
