@@ -65,6 +65,10 @@ def get_renderer() -> Renderer:
 
 
 def get_image_generator() -> ImageGenerator:
+    if get_settings().comfyui_provider.lower() == "runpod":
+        from .adapters.runpod import RunPodImageGenerator
+
+        return RunPodImageGenerator()
     return ComfyUIClient()
 
 

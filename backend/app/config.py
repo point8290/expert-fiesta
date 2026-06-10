@@ -50,6 +50,12 @@ class Settings(BaseSettings):
     llm_model: str = ""  # empty -> provider default
     llm_base_url: str = ""  # empty -> provider default
     comfyui_host: str = "http://localhost:8188"
+    # CB-2: image/video provider = local | runpod
+    comfyui_provider: str = "local"
+    runpod_api_key: str = ""
+    runpod_image_endpoint: str = ""
+    runpod_video_endpoint: str = ""
+    runpod_audio_endpoint: str = ""
     acestep_model: str = "ace-step-v1"
     cloud_video_url: str = ""
     cloud_video_api_key: str = ""

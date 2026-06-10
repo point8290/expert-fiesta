@@ -96,7 +96,7 @@ RunPod too — same adapter.
 - `get_llm_client()` selects by `LLM_PROVIDER`; Ollama stays for local.
 - Tests mock the HTTP; transport errors already map to 502 (just shipped).
 
-### CB-2 — RunPod serverless image/video backend · `todo`
+### CB-2 — RunPod serverless image/video backend · `done`
 - `RunPodImageGenerator` (`ImageGenerator`) + `RunPodVideoBackend` (`VideoBackend`):
   submit job (our pinned workflow JSON as payload) → poll status → fetch output.
 - Register under `comfyui_provider=runpod` / video registry; reuse the committed
