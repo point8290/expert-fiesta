@@ -62,6 +62,11 @@ class Settings(BaseSettings):
     cloud_video_url: str = ""
     cloud_video_api_key: str = ""
 
+    # CB-6: cold-start / readiness tuning. When true, /ready probes remote model
+    # backends (hosted LLM, RunPod) so a node only takes traffic once warm.
+    ready_check_backends: bool = False
+    ready_probe_timeout_seconds: float = 3.0
+
     # Observability (opt-in)
     sentry_dsn: str = ""
 

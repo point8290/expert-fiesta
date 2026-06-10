@@ -118,8 +118,13 @@ RunPod too — same adapter.
   `totalGpuSeconds` + `estimatedCost` (× `GPU_COST_PER_SECOND`); clip generation
   calls `assert_gpu_budget` (429 when `MAX_GPU_SECONDS_PER_USER` exceeded, 0 = unlimited).
 
-### CB-6 — Cold-start & readiness tuning · `todo`
+### CB-6 — Cold-start & readiness tuning · `done`
 - Warm-pool config, network-volume weights, `/ready` checks model endpoints.
+- `backend_targets`/`check_backends` (app/services/readiness.py) derive the remote
+  endpoints from config and probe them via an injected callable. When
+  `READY_CHECK_BACKENDS=true`, `/ready` probes the hosted LLM + RunPod endpoints
+  (timeout `READY_PROBE_TIMEOUT_SECONDS`) and returns 503 with per-backend status
+  until they answer, so a cold node only takes traffic once warm.
 
 ---
 
