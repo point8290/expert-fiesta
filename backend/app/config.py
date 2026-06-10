@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "llama3.1"
     llm_timeout_seconds: int = 120
+    # Hosted LLM (CB-1): provider = ollama | anthropic | openai
+    llm_provider: str = "ollama"
+    llm_api_key: str = ""
+    llm_model: str = ""  # empty -> provider default
+    llm_base_url: str = ""  # empty -> provider default
     comfyui_host: str = "http://localhost:8188"
     acestep_model: str = "ace-step-v1"
     cloud_video_url: str = ""

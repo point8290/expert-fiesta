@@ -27,3 +27,10 @@ request path (see `docker-compose.yml`).
 ## Releases
 Tag `vX.Y.Z` to build + push images to GHCR (`.github/workflows/release.yml`),
 then run `alembic upgrade head` and roll out. CI also runs dependency + secret scans.
+
+## LLM provider (CB-1)
+Default is local Ollama. For the hosted tier, set:
+- `LLM_PROVIDER=anthropic` (or `openai`), `LLM_API_KEY=...`
+- optional `LLM_MODEL` (defaults: `claude-sonnet-4-6` / `gpt-4o-mini`), `LLM_BASE_URL`
+
+Transport/availability errors surface as a clean 502 with a helpful message.

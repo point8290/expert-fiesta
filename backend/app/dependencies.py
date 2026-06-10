@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 from .config import get_settings
 from .adapters.audio_analysis import AudioAnalyzer, LibrosaAnalyzer
 from .adapters.consistency import ConsistencyScorer, FaceEmbeddingScorer
-from .adapters.llm import LLMClient, OllamaClient
+from .adapters.llm import (
+    AnthropicLLMClient,
+    LLMClient,
+    OllamaClient,
+    OpenAILLMClient,
+)
 from .adapters.render import FFmpegRenderer, Renderer
 from .adapters.song import AceStepGenerator, SongGenerator
 from .comfyui.client import ComfyUIClient, ImageGenerator
@@ -39,6 +44,11 @@ def get_current_user(
 
 
 def get_llm_client() -> LLMClient:
+    provider = get_settings().llm_provider.lower()
+    if provider == "anthropic":
+        return AnthropicLLMClient()
+    if provider == "openai":
+        return OpenAILLMClient()
     return OllamaClient()
 
 

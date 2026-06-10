@@ -91,7 +91,7 @@ RunPod too — same adapter.
 
 ## Rollout (test-driven stories, in order)
 
-### CB-1 — Hosted LLM client · `todo` — *do first (unblocks today's Ollama pain)*
+### CB-1 — Hosted LLM client · `done`
 - `HostedLLMClient` implementing `LLMClient` (Anthropic + OpenAI), structured JSON.
 - `get_llm_client()` selects by `LLM_PROVIDER`; Ollama stays for local.
 - Tests mock the HTTP; transport errors already map to 502 (just shipped).
