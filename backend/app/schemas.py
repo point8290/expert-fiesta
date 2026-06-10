@@ -247,6 +247,8 @@ class UsageSummary(CamelModel):
     succeeded: int
     failed: int
     by_type: dict[str, int]
+    total_gpu_seconds: float = 0.0
+    estimated_cost: float = 0.0
 
 
 class LyricsData(CamelModel):

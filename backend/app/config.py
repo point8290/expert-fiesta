@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     # Per-user quotas
     max_projects_per_user: int = 50
     max_active_jobs_per_user: int = 50
+    max_gpu_seconds_per_user: float = 0.0  # 0 = unlimited
+    gpu_cost_per_second: float = 0.0  # for cost estimation in usage
 
     # Auth: short-lived access tokens + simple rate limiting on auth endpoints.
     access_token_minutes: int = 60

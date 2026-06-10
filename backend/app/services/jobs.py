@@ -5,6 +5,7 @@ the UI can show queue position and live progress. Tasks are plain callables that
 receive a ``progress`` callback; ``run_job`` drives the lifecycle and captures
 failures. A single worker processes jobs in order, which also serializes GPU use.
 """
+import time
 from typing import Callable, Optional
 
 from sqlalchemy.orm import Session
@@ -45,6 +46,7 @@ def run_job(db: Session, job: Job, task: JobTask) -> Job:
         job.progress = max(0.0, min(1.0, value))
         db.commit()
 
+    started = time.monotonic()
     try:
         result = task(progress)
         job.status = "succeeded"
@@ -53,6 +55,7 @@ def run_job(db: Session, job: Job, task: JobTask) -> Job:
     except Exception as exc:  # noqa: BLE001 - failures are recorded, not raised
         job.status = "failed"
         job.error = str(exc)
+    job.gpu_seconds = time.monotonic() - started  # CB-5: meter compute time
     db.commit()
     db.refresh(job)
     return job

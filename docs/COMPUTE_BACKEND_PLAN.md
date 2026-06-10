@@ -112,8 +112,11 @@ RunPod too — same adapter.
 - On repeated RunPod failure, fall back to the managed video API (`cloud` slot);
   record the switch; clear user-facing status.
 
-### CB-5 — GPU-second metering + budget caps · `todo`
+### CB-5 — GPU-second metering + budget caps · `done`
 - Extend usage metering with per-job GPU seconds + cost; enforce budget caps (429).
+- `run_job` times each task into `Job.gpu_seconds`; usage summary reports
+  `totalGpuSeconds` + `estimatedCost` (× `GPU_COST_PER_SECOND`); clip generation
+  calls `assert_gpu_budget` (429 when `MAX_GPU_SECONDS_PER_USER` exceeded, 0 = unlimited).
 
 ### CB-6 — Cold-start & readiness tuning · `todo`
 - Warm-pool config, network-volume weights, `/ready` checks model endpoints.

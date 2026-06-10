@@ -34,3 +34,20 @@ def assert_active_job_quota(db: Session, user: User) -> None:
             status.HTTP_429_TOO_MANY_REQUESTS,
             detail=f"Active generation-job limit reached ({cap})",
         )
+
+
+def assert_gpu_budget(db: Session, user: User) -> None:
+    cap = get_settings().max_gpu_seconds_per_user
+    if cap <= 0:  # 0 = unlimited
+        return
+    used = db.scalar(
+        select(func.coalesce(func.sum(Job.gpu_seconds), 0.0))
+        .select_from(Job)
+        .join(Project, Job.project_id == Project.id)
+        .where(Project.owner_id == user.id)
+    )
+    if used >= cap:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"GPU budget exhausted ({used:.0f}s / {cap:.0f}s)",
+        )
