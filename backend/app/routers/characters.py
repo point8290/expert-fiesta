@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from ..adapters.consistency import ConsistencyScorer
 from ..adapters.llm import LLMClient
 from ..comfyui.client import ImageGenerator
+from ..config import get_settings
 from ..database import get_db
 from ..dependencies import (
     get_consistency_scorer,
@@ -26,6 +27,7 @@ from ..ownership import require_character, require_project
 from ..schemas import CharacterRead, CharacterUpdate, ConsistencyScoreRead
 from ..services.characters import CharacterGenerationError, generate_characters
 from ..services.consistency import score_scenes
+from ..services.jobs import create_job
 from ..services.images import generate_character_reference
 from ..storage import Storage
 from ..uploads import enforce_upload_size
@@ -125,6 +127,14 @@ def generate_reference(
     generator: ImageGenerator = Depends(get_image_generator),
     storage: Storage = Depends(get_storage),
 ):
+    # CB-3: run on the worker in async mode; otherwise inline.
+    if get_settings().async_jobs:
+        character.ref_status = "generating"
+        create_job(db, "character_ref", character.project_id, target_id=character.id)
+        db.commit()
+        db.refresh(character)
+        return character
+
     project = db.get(Project, character.project_id)
     path = generate_character_reference(project, character, generator, storage)
     character.ref_image_path = path

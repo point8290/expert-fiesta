@@ -16,13 +16,21 @@ from typing import Callable, Optional
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .comfyui.client import ComfyUIClient
 from .config import get_settings
 from .database import SessionLocal
-from .models import Job, Project, Scene
+from .dependencies import get_image_generator
+from .models import Character, Job, Project, Scene
 from .services.clips import generate_clip_for_scene, resolve_backend
+from .services.images import (
+    generate_character_reference,
+    generate_scene_keyframe,
+)
 from .services.jobs import ProgressFn, run_job
 from .storage import Storage
 from .video.registry import build_registry
+
+from sqlalchemy import select
 
 logger = logging.getLogger("lmvs.worker")
 
@@ -37,7 +45,40 @@ def _handle_clip(db: Session, job: Job, progress: ProgressFn) -> Optional[str]:
     return generate_clip_for_scene(db, scene, backend, Storage(get_settings().storage_dir))
 
 
-JOB_HANDLERS: dict[str, JobHandler] = {"clip": _handle_clip}
+def _handle_keyframe(db: Session, job: Job, progress: ProgressFn) -> Optional[str]:
+    scene = db.get(Scene, job.target_id)
+    project = db.get(Project, scene.project_id)
+    characters = list(
+        db.scalars(select(Character).where(Character.project_id == scene.project_id))
+    )
+    progress(0.1)
+    path = generate_scene_keyframe(
+        project, scene, characters, get_image_generator(), Storage(get_settings().storage_dir)
+    )
+    scene.keyframe_path = path
+    scene.keyframe_status = "generated"
+    db.commit()
+    return path
+
+
+def _handle_character_ref(db: Session, job: Job, progress: ProgressFn) -> Optional[str]:
+    character = db.get(Character, job.target_id)
+    project = db.get(Project, character.project_id)
+    progress(0.1)
+    path = generate_character_reference(
+        project, character, get_image_generator(), Storage(get_settings().storage_dir)
+    )
+    character.ref_image_path = path
+    character.ref_status = "generated"
+    db.commit()
+    return path
+
+
+JOB_HANDLERS: dict[str, JobHandler] = {
+    "clip": _handle_clip,
+    "keyframe": _handle_keyframe,
+    "character_ref": _handle_character_ref,
+}
 
 
 def claim_next_job(db: Session) -> Job | None:

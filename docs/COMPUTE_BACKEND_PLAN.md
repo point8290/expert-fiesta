@@ -102,9 +102,11 @@ RunPod too — same adapter.
 - Register under `comfyui_provider=runpod` / video registry; reuse the committed
   workflow templates. Tests mock RunPod's submit/poll API.
 
-### CB-3 — Async for all GPU work · `todo`
-- Add `keyframe`, `character_ref`, and `song` handlers to the worker registry
-  (clip already there); those endpoints enqueue when `ASYNC_JOBS=true`.
+### CB-3 — Async for all GPU work · `done`
+- `keyframe` + `character_ref` handlers added to the worker; those endpoints set
+  a `generating` status and enqueue when `ASYNC_JOBS=true` (clip already async).
+  Generic `Job.target_id` added (migration 0003). **Song async deferred** (its
+  Audio-row lifecycle needs a placeholder/status of its own).
 
 ### CB-4 — Fallback / circuit-breaker · `todo`
 - On repeated RunPod failure, fall back to the managed video API (`cloud` slot);

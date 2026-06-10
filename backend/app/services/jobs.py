@@ -17,9 +17,19 @@ JobTask = Callable[[ProgressFn], Optional[str]]
 
 
 def create_job(
-    db: Session, job_type: str, project_id: str, scene_id: str | None = None
+    db: Session,
+    job_type: str,
+    project_id: str,
+    scene_id: str | None = None,
+    target_id: str | None = None,
 ) -> Job:
-    job = Job(type=job_type, project_id=project_id, scene_id=scene_id, status="queued")
+    job = Job(
+        type=job_type,
+        project_id=project_id,
+        scene_id=scene_id,
+        target_id=target_id,
+        status="queued",
+    )
     db.add(job)
     db.commit()
     db.refresh(job)
